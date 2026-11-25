@@ -10,7 +10,23 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ('push_tags.py', 'install.py', 'shell.zsh', 'manifest.json', 'ci_events.py', 'repo_preferences.py', 'sound_library.py')
+RUNTIME = ('push_tags.py', 'install.py', 'shell.zsh', 'manifest.json', 'ci_events.py',
+           'repo_preferences.py', 'sound_library.py', 'app_updates.py')
+LOGO = 'macos/assets/code-push-tags-logo.png'
+
+
+def build_icon(source, target, output):
+    with tempfile.TemporaryDirectory(prefix='icon-', dir=output) as temporary:
+        iconset = Path(temporary) / 'AppIcon.iconset'
+        iconset.mkdir()
+        for points in (16, 32, 128, 256, 512):
+            for scale in (1, 2):
+                pixels = str(points * scale)
+                suffix = '@2x' if scale == 2 else ''
+                name = iconset / f'icon_{points}x{points}{suffix}.png'
+                subprocess.run(['sips', '-z', pixels, pixels, str(source), '--out', str(name)],
+                               check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(['iconutil', '-c', 'icns', str(iconset), '-o', str(target)], check=True)
 
 
 def build(output):
@@ -21,14 +37,17 @@ def build(output):
     tracked = set(subprocess.check_output(['git', 'ls-files'], cwd=ROOT, text=True).splitlines())
     manifest = json.loads((ROOT / 'manifest.json').read_text())
     files = list(RUNTIME) + [tag['file'] for tag in manifest['tags']]
-    for name in files:
+    for name in files + [LOGO]:
         path = (ROOT / name).resolve()
         if name not in tracked or not path.is_relative_to(ROOT) or not path.is_file():
-            raise RuntimeError(f'Required runtime file is not tracked: {name}')
+            raise RuntimeError(f'Required bundle file is not tracked: {name}')
     resources = app / 'Contents/Resources/kit'
     binary = app / 'Contents/MacOS/CodePushTags'
     binary.parent.mkdir(parents=True)
     resources.mkdir(parents=True)
+    logo = resources.parent / 'logo.png'
+    shutil.copy2(ROOT / LOGO, logo)
+    build_icon(logo, resources.parent / 'AppIcon.icns', output)
     for name in dict.fromkeys(files):
         target = resources / name
         target.parent.mkdir(parents=True, exist_ok=True)

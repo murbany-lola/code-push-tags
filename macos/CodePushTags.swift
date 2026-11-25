@@ -20,6 +20,13 @@ struct Repository: Codable {
     let reason: String?
 }
 
+struct AppUpdateReport: Decodable {
+    let latest_version: String?
+    let update_available: Bool
+    let download_url: String?
+    let error: String?
+}
+
 struct LibraryReport: Decodable {
     let root: String
     let revision: String?
@@ -102,6 +109,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private var libraryCheckedAt = Date.distantPast
     private let libraryRefresh = HardwareButton(title: "REFRESH LIBRARY", target: nil, action: nil)
     private let libraryQueue = DispatchQueue(label: "code-push-tags.library", qos: .utility)
+    private let updateBar = NSStackView()
+    private let updateLabel = NSTextField(labelWithString: "")
+    private let updateButton = HardwareButton(title: "DOWNLOAD UPDATE", target: nil, action: nil)
+    private var updateDownload: URL?
+    private var updateLoading = false
+    private var updateCheckedAt = Date.distantPast
+    private let updateQueue = DispatchQueue(label: "code-push-tags.updates", qos: .utility)
+    private var appVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0" }
     private var catalogLoading = false
     private var connectionVerified = false
     private var connectionCheckedAt = Date.distantPast
@@ -140,9 +155,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             self.refreshSettings()
             if Date().timeIntervalSince(self.connectionCheckedAt) >= 60 { self.refreshRepositoryCatalog() }
             if Date().timeIntervalSince(self.libraryCheckedAt) >= 3600 { self.refreshLibrary() }
+            if Date().timeIntervalSince(self.updateCheckedAt) >= 3600 { self.checkForAppUpdates() }
         }
         refreshRepositoryCatalog()
         refreshLibrary()
+        checkForAppUpdates()
         showWindow()
     }
 
@@ -157,6 +174,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let main = NSMenu()
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
+        appMenu.addItem(withTitle: "Check for Updates…", action: #selector(manualUpdateCheck), keyEquivalent: "").target = self
+        appMenu.addItem(withTitle: "Restart UI", action: #selector(restartUI), keyEquivalent: "").target = self
+        appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Quit Code Push Tags", action: #selector(quit), keyEquivalent: "q").target = self
         appItem.submenu = appMenu
         main.addItem(appItem)
@@ -166,6 +186,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let menu = NSMenu()
         menu.addItem(withTitle: "Show Code Push Tags", action: #selector(showWindow), keyEquivalent: "").target = self
         menu.addItem(withTitle: "Mute all sounds", action: #selector(toggleMute), keyEquivalent: "").target = self
+        menu.addItem(withTitle: "Check for Updates…", action: #selector(manualUpdateCheck), keyEquivalent: "").target = self
+        menu.addItem(withTitle: "Restart UI", action: #selector(restartUI), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit", action: #selector(quit), keyEquivalent: "").target = self
         statusItem.menu = menu
@@ -381,9 +403,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let layout = NSSegmentedControl(labels: ["DJ DECKS", "BOOMBOX"], trackingMode: .selectOne, target: self, action: #selector(changeLayout))
         layout.selectedSegment = layoutStyle == "boombox" ? 1 : 0
         layout.setAccessibilityLabel("App layout")
-        let header = NSStackView(views: [brand, space, layout, previewStatus]); header.spacing = 12
+        let logo = NSImageView()
+        logo.image = NSImage(contentsOf: Bundle.main.resourceURL!.appendingPathComponent("logo.png"))
+        logo.imageScaling = .scaleProportionallyUpOrDown
+        logo.setAccessibilityLabel("Code Push Tags cassette DJ")
+        logo.widthAnchor.constraint(equalToConstant: 54).isActive = true
+        logo.heightAnchor.constraint(equalToConstant: 54).isActive = true
+        let header = NSStackView(views: [logo, brand, space, layout, previewStatus]); header.spacing = 12
         outer.addArrangedSubview(header)
         header.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
+        updateBar.spacing = 12
+        updateBar.isHidden = true
+        updateBar.setAccessibilityLabel("App update available")
+        updateLabel.font = .monospacedSystemFont(ofSize: 10, weight: .medium)
+        updateLabel.textColor = mint
+        let updateSpace = NSView(); updateSpace.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        updateButton.target = self; updateButton.action = #selector(downloadUpdate)
+        updateButton.isBordered = false
+        updateButton.widthAnchor.constraint(equalToConstant: 166).isActive = true
+        updateButton.heightAnchor.constraint(equalToConstant: 28).isActive = true
+        updateBar.addArrangedSubview(updateLabel)
+        updateBar.addArrangedSubview(updateSpace)
+        updateBar.addArrangedSubview(updateButton)
+        outer.addArrangedSubview(updateBar)
+        updateBar.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
         transportHost.spacing = 12
         rebuildTransport()
         outer.addArrangedSubview(transportHost)
@@ -795,6 +838,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         process.arguments = ["-e", "tell application \"Terminal\" to do script \"\(command)\"", "-e", "tell application \"Terminal\" to activate"]
         do { try process.run(); status.stringValue = "Finish GitHub sign-in in Terminal, then select Check setup." }
         catch { alert("Terminal could not be opened.", error.localizedDescription) }
+    }
+
+    @objc private func manualUpdateCheck() { checkForAppUpdates(force: true) }
+
+    private func checkForAppUpdates(force: Bool = false) {
+        guard !updateLoading else { return }
+        updateLoading = true
+        updateCheckedAt = Date()
+        perform("app_updates.py", ["check", "--current", appVersion] + (force ? ["--force"] : []), on: updateQueue, quiet: true) { [weak self] success, output in
+            guard let self = self else { return }
+            self.updateLoading = false
+            guard success, let data = output.data(using: .utf8),
+                  let report = try? JSONDecoder().decode(AppUpdateReport.self, from: data) else {
+                if force { self.status.stringValue = "Update check failed. Existing sounds remain available." }
+                return
+            }
+            if report.update_available, let version = report.latest_version,
+               let address = report.download_url, let url = URL(string: address) {
+                self.updateDownload = url
+                self.updateLabel.stringValue = "VERSION " + version + " IS AVAILABLE · YOU HAVE " + self.appVersion
+                self.updateBar.isHidden = false
+                self.updateBar.toolTip = "Download the new app when ready. Your background watcher continues to run."
+                if force { self.status.stringValue = "An app update is available. Download it when ready." }
+            } else {
+                self.updateDownload = nil
+                self.updateBar.isHidden = true
+                if force { self.status.stringValue = report.error ?? "You have the latest published app version (" + self.appVersion + ")." }
+            }
+        }
+    }
+
+    @objc private func downloadUpdate() {
+        guard let url = updateDownload else { return }
+        NSWorkspace.shared.open(url)
+    }
+
+    @objc private func restartUI() {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-n", Bundle.main.bundleURL.path]
+        process.environment = environment
+        do {
+            try process.run()
+            process.waitUntilExit()
+            if process.terminationStatus == 0 { NSApp.terminate(nil) }
+            else { status.stringValue = "The app window could not be restarted. Your watcher is still running." }
+        } catch { status.stringValue = "The app window could not be restarted. Your watcher is still running." }
     }
 
     @objc private func showWindow() { window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true) }

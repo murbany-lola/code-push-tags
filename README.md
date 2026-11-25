@@ -1,5 +1,7 @@
 # Code Push Tags
 
+<img src="macos/assets/code-push-tags-logo.png" alt="Code Push Tags cassette DJ" width="180" />
+
 **Start with [INSTALL.md](INSTALL.md).** Download the app, choose your sounds, and enable it when ready.
 
 [Download the DMG](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.dmg) · [Download the ZIP](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.zip) · [Watch the trailer](docs/code-push-tags-trailer.mp4)

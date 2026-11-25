@@ -2,15 +2,17 @@
 
 ## Current state
 
-The source is on `main` in Max's personal repository. Max approved public source and downloads. [Version 0.1.0](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.1.0) is published with a DMG and ZIP.
+The source is on `main` in Max's personal repository. Max approved public source and downloads. [Version 0.2.0](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.2.0) is published with a DMG and ZIP.
 
-The installed local app is `~/Applications/Code Push Tags.app`, version 0.1.0, build 9. It targets Apple Silicon and macOS 12 or later. Intel support and automatic app-code updates are deferred. Shared audio updates are implemented.
+The installed local app is `~/Applications/Code Push Tags.app`, version 0.2.0, build 10. It targets Apple Silicon and macOS 12 or later. Intel support and automatic app-code installation are deferred. Shared audio updates and quiet app-version notices are implemented.
 
 Max remains the pilot user. No coworker invitations or automatic enrollment were performed. People can download the public app and choose whether to enable setup. See [INSTALL.md](INSTALL.md).
 
 The existing checkout-based polling watcher remains installed on Max's Mac. The native app uses the same local preferences. Opening the app does not replace that installation.
 
 ## Current behavior
+
+A cassette DJ logo appears in the window, Finder, and Dock. A quiet update bar appears when a newer published app is available. Checks run at startup and once per hour. Downloads start only after a click. Restart UI starts a new UI process and leaves the installed background watcher registered.
 
 The app has saved DJ and boombox layouts. Its library has Push, Merge, and Failure groups. Items look like record sleeves or cassette cases. Double-click an item to preview it. A single click does not play or highlight it. Card outlines are removed. CUE plays the assigned sound on one click.
 
@@ -73,3 +75,7 @@ No new failing deployment was triggered for testing. Real merge delivery and dup
 The downstream polling scan uses a one-day checkpoint overlap. It discovers repositories from open PRs, saved own merges, and explicit repository selections.
 
 See [app controls](MAC_APP.md), [updates](UPDATES.md), and [sound sources](SOUNDS.md).
+
+Decided by: person (Max). Add a silly general logo and quiet version notices. Preserve background processing during a UI restart. Defer Apple Developer signing and notarization.
+
+The version 0.2.0 UI restart test changed the UI PID, retained the launchd watcher registration, and preserved hashes of the saved sound, mute, repository, and layout files. The controlled newer-version test used isolated local state. It did not create a real release or open its download URL.

@@ -2,7 +2,7 @@
 
 ## Current state
 
-Version 0.1.0 is published with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Automatic app-code updates are not implemented.
+Version 0.2.0 is the new public preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
 
 Decided by: person (Max). Test locally before sharing. Keep the repository in his personal GitHub account and make it public for downloads.
 
@@ -100,3 +100,15 @@ These items are not implemented by the current prototype.
 New audio does not require a new app bundle. Add the WAV and its manifest entry to the repository, then merge them to `main`. Users with repository access receive the update at the next library check. **Refresh Library** checks immediately. Offline users keep their previous complete library. See [sound library procedure](SOUNDS.md).
 
 Merge library removals before sharing a new bundle that uses them. Library sync reads `main`, even when a local prototype was built from a feature branch.
+
+## Quiet update notices
+
+Version 0.2.0 checks the latest published GitHub release at startup and once per hour. **Check for Updates** starts a manual check. The app compares numeric version numbers and requires an uploaded DMG or ZIP before it shows the update notice.
+
+The notice stays inside the app. It does not open a popup, take focus, or stop sound playback. **Download update** opens the validated release download after a click. The existing download-and-replace procedure still applies.
+
+**Restart UI** starts a new UI process and closes the old UI process. The installed background watcher remains registered. Saved sound, mute, repository, and layout choices remain in place. A UI restart does not download or install app code.
+
+Install version 0.2.0 manually once on Macs that still run version 0.1.0. Earlier versions cannot show the new notice. Audio-library updates remain separate from app-code updates.
+
+Decided by: person (Max). Use a quiet update notice and preserve the background watcher during UI restarts. Apple Developer signing and notarization remain deferred at Max's request.

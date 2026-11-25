@@ -37,7 +37,7 @@ Installing or opening the app does not enable automatic sounds.
 
 ## If macOS blocks the app
 
-Version 0.1.0 has an ad-hoc signature. It is not Developer ID signed or notarized. macOS can block a downloaded copy.
+The current public preview has an ad-hoc signature. It is not Developer ID signed or notarized. macOS can block a downloaded copy.
 
 Read [Apple's instructions for opening an app from an unidentified developer](https://support.apple.com/en-us/102445). Check the source of the download before you approve an exception. A managed Mac can have additional restrictions.
 
@@ -89,7 +89,13 @@ One global mute covers pushes, merges, CI failures, and previews. Muted events a
 
 The app checks this repository's shared audio at startup and once per hour. The enabled background watcher also checks once per hour. Select **Refresh Library** to check immediately. A complete local copy remains available offline.
 
-Audio updates do not require a new app download. App code updates do. See [update and rollback steps](UPDATES.md).
+Audio updates do not require a new app download.
+
+Starting with version 0.2.0, the app checks for new app versions at startup and once per hour. A quiet update bar appears when a newer download is available. It does not open a popup or move the app to the front. Select **Check for Updates** from the app menu to check immediately.
+
+Select **Download update** when ready. Replace the app with the new copy, then open it. The app does not install updates automatically. Your saved choices remain outside the app bundle. **Restart UI** in the app menu restarts the window without stopping the installed background watcher.
+
+Version 0.1.0 does not contain the update checker. Install version 0.2.0 once to receive future update notices. See [update and rollback steps](UPDATES.md).
 
 ## Remove setup
 

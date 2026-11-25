@@ -160,3 +160,15 @@ The app checks the shared sound library at startup and once per hour. Select **R
 | Record cards without outlines | Cassette cards without outlines |
 | --- | --- |
 | ![Record cards](docs/library-records-current.png) | ![Cassette cards](docs/library-cassettes-current.png) |
+
+## App updates and UI restart
+
+The cassette DJ logo appears in the window, Finder, and Dock. The same source image supplies each size.
+
+Starting with version 0.2.0, a quiet update bar shows when a newer published app is available. Checks run at startup and once per hour. **Check for Updates** in the app menu starts an immediate check. No popup opens and no focus change occurs.
+
+Select **Download update** when ready. The app opens the download after that click. Follow INSTALL.md to replace the app. The app does not install app-code updates automatically.
+
+Use **Restart UI** in the app menu to restart the window. The installed background watcher remains registered. Saved choices remain in place.
+
+Decided by: person (Max). Add a general logo and a quiet update notice. Keep background processing separate from UI restarts.

@@ -230,3 +230,32 @@ Decided by: person (Max). Use general app language instead of one tag's name. Ma
 The onboarding guides use event-based preview commands. Three sound display names no longer include the producer-tag prefix. Their IDs, file paths, audio, event categories, and saved selections are unchanged. Source attribution remains in SOUNDS.md.
 
 Validation: the manifest parser accepted all 10 entries. A comparison with the previous manifest confirmed that only display names changed. All referenced audio files exist. The diff check passed. The pre-merge gate skipped review for a six-line production change with no new files, schema, or release change. Prod net LOC, test net LOC, new prod files, tables, columns, and data resources are zero. No app build was needed. A complete ASD-STE100 dictionary check was not performed.
+
+## Logo, quiet app updates, and UI restart
+
+Decided by: person (Max). Add a silly general logo and app-version notices. Keep interruptions small and preserve background processing during UI restarts. Defer official Apple signing and notarization.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 220 | 220 |
+| Test net LOC | 172 | 172 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 2 | 2 |
+
+- reuse-hunter: pass; no findings.
+- loc-minimizer: pass; no findings.
+- path-correctness: pass; no findings.
+
+Validation: 16 update-check tests passed. They cover numeric version comparison, the cache, offline responses, unsupported releases, URL checks, and uploaded assets. The real public API returned version 0.1.0 and correctly reported no update for that same installed version.
+
+Swift typecheck and the targeted Apple Silicon build passed. The native update-bar test used a controlled version 0.3.0 response in isolated local state. The bar fit the window. No actual version 0.3.0 release was created and its download was not opened.
+
+The Restart UI test started a new UI PID. The launchd watcher remained registered. Hashes of the saved configuration, mute, and layout files were unchanged. No long-running test webhook process was present during this check; this check did not establish a stable webhook PID.
+
+The DMG mounted read-only. It contained version 0.2.0, build 10, the update helper, header PNG, and generated ICNS icon. Its ad-hoc signature passed and its architecture was arm64. No bytecode cache was present. The image was ejected. Logo corner alpha was zero, which confirmed transparent margins.
+
+The logo came from the built-in image generation tool. The exact prompt is in docs/logo-prompt.md. The current public preview is not Developer ID signed or notarized. Version 0.1.0 users must install this update once before they can receive future app-update notices.
+
+The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.
