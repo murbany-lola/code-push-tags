@@ -88,4 +88,4 @@ Validation: 17 receiver tests, 13 listener tests, and 2 global mute tests passed
 
 The gate reported four secret-related source lines. These lines read an environment secret or construct Keychain commands. No secret values were added to the repository.
 
-The webhook forwarding service is for development and testing. It supports one forwarding session per target. Coworker rollout remains outside this one-person pilot. Organization connection is pending the required change decision in PILOT.md.
+The webhook forwarding service is for development and testing. It supports one forwarding session per target. Coworker rollout remains outside this one-person pilot. Max later approved the temporary organization-hook exception. The connection is active; see PILOT.md.

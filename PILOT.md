@@ -10,13 +10,23 @@ Current push sound: `stackaholics` ("We build different"). Current merge sound: 
 
 The live test used `murbany-lola/code-push-tags` PR #1. It merged into a temporary branch. Polling was paused. The signed webhook receiver saved the merge. A second delivery did not play again. Polling was restored. The temporary target branch was removed.
 
-## Lola Labs connection request
+## Current connection
+
+The `lola-labs` organization test hook is active for `pull_request` events. Its ID is `716782681`. The signed Mac receiver runs on `127.0.0.1:18769`. GitHub recorded HTTP 200 for a real organization ping. No real Lola Labs merge has been used to test the new hook yet.
+
+Decided by: person (Max). Max approved the temporary one-person organization-hook exception after the scope and infrastructure rule were explained in this session.
+
+The existing token lacked `admin:org_hook`. Max completed GitHub CLI device authorization. The pilot credential was updated in Keychain. No credential value is in this repository.
+
+The listener is running as a pilot process. It does not yet restart automatically after a Mac reboot. Polling remains registered with launchd. The code is in PR #2 and is not merged.
+
+## Lola Labs connection procedure
 
 Target: one temporary GitHub CLI test webhook for the `lola-labs` organization. Subscribe only to `pull_request` events. Forward signed events through GitHub's authenticated service to Max's local receiver. The receiver confirms the PR and filters for Max before playback.
 
-Required action: authorize an exception for this temporary organization settings change, or route it through the infrastructure owner and the applicable platform PR. The user instructions require infrastructure changes through platform PRs. The agent treats an organization-wide webhook as an infrastructure change.
+The user instructions require infrastructure changes through platform PRs. The agent treated the organization-wide webhook as infrastructure. Max explicitly approved the temporary pilot exception before the hook was created.
 
-Command after authorization:
+Authorized command:
 
 ```sh
 python3 listen.py --org lola-labs
