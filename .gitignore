@@ -10,3 +10,4 @@ audio/*.wav
 build_tags.py
 !audio/stackaholics-welcome-to-main.wav
 !audio/stackaholics-thats-a-wrap.wav
+!audio/wheezy-outta-here.wav

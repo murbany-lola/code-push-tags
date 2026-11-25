@@ -35,3 +35,18 @@ Two approved WAV files were added through the existing manifest. The active sett
 | New prod files | 2 | 2 |
 
 reuse-hunter: pass; no findings. The manifest IDs are unique. All three WAV files decode. The CLI lists all three tags. The runtime code was not changed.
+
+## Wheezy merge clip
+
+The original Wheezy clip uses the existing manifest and selection command. All saved clips remain. The local merge selection is `wheezy-outta-here`.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 7 | 7 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+reuse-hunter: pass; no findings. All four WAV files decode. The manifest IDs are unique. The local push selection remains `stackaholics`.

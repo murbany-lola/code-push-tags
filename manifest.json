@@ -18,6 +18,12 @@
       "text": "Stackaholics! That's a wrap!",
       "file": "audio/stackaholics-thats-a-wrap.wav",
       "event": "merge"
+    },
+    {
+      "id": "wheezy-outta-here",
+      "text": "Wheezy outta here",
+      "file": "audio/wheezy-outta-here.wav",
+      "event": "merge"
     }
   ]
 }
