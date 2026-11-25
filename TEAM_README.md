@@ -35,34 +35,29 @@ Keep this folder at the same path after installation.
 
 ## Listen and choose
 
-Listen to the default push and merge clips:
-
-```sh
-afplay audio/stackaholics.wav
-afplay audio/branch-outta-here.wav
-```
-
-The default push line is "Stackaholics! We build different!" The default merge line is "Branch outta here!"
-
-List all available clips:
+List the sound library:
 
 ```sh
 python3 push_tags.py list
 ```
 
-Set the defaults:
+Preview sounds for each event:
 
 ```sh
-python3 push_tags.py configure --push-tag stackaholics --merge-tag branch-outta-here --push on --merge on
+python3 push_tags.py play --event push
+python3 push_tags.py play --event merge
+python3 push_tags.py play --event ci
 ```
 
-To use "Another one" for merges instead:
+These commands use saved sound selections when available. In the app, browse the Push, Merge, and Failure groups. Double-click an item to preview it. Use each event's menu to save its sound assignment.
+
+For terminal selection options, run:
 
 ```sh
-python3 push_tags.py configure --merge-tag dj-khaled-another-one
+python3 push_tags.py configure --help
 ```
 
-Replace that ID with another ID from the list to choose a different clip. These commands change only your settings.
+Each selection changes only your local settings. New library clips do not replace an existing selection. See [sound sources and updates](SOUNDS.md).
 
 ## Enable sounds
 
@@ -115,10 +110,10 @@ python3 ~/code-push-tags/push_tags.py unmute
 
 ## Try it
 
-Play one clip manually:
+Preview your push sound manually:
 
 ```sh
-push-tags play stackaholics
+push-tags play --event push
 ```
 
 Test the push trigger from a new terminal:

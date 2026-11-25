@@ -1,8 +1,8 @@
-# Code Push Tags: Mac prototype
+# Code Push Tags for macOS
 
 ## Current scope
 
-This is a private prototype for local tests on Max's Mac. It supports Apple Silicon and macOS 12 or later. Intel support is deferred.
+The app plays selected sounds for pushes, PR merges, and related CI failures. It supports Apple Silicon and macOS 12 or later. Intel support is deferred.
 
 Decided by: person (Max). Max requested a small standalone app, local testing before invitations, and Apple Silicon support first.
 
@@ -10,21 +10,21 @@ The app uses the existing Python tools, sound files, and settings. It does not c
 
 ![DJ-table prototype](docs/dj-prototype.png)
 
-## Open the prototype
+## Open the app
 
-The local app is at `~/Applications/Code Push Tags.app`. Open it from Applications or the Dock. Closing the main window keeps the menu-bar control available. Reopening the app shows the main window again.
+Open the app from Applications or the Dock. Closing the main window keeps the menu-bar control available. Reopening the app shows the main window again.
 
-Opening the app does not install automatic sounds. Max's existing terminal setup remains active. Sound choices and mute changes use that same local configuration.
+Opening the app does not install automatic sounds. The app preserves an existing terminal setup. Sound choices and mute changes use the same local configuration.
 
 ## Preview and choose sounds
 
-1. Click a sample pad to preview its clip.
+1. Double-click a library item to preview its sound.
 2. Choose a sound on **Deck A / Push**, **Deck B / Merge**, or **Failure FX / CI/CD**.
 3. Use the event's **CUE** button to hear that selection.
 
-Only one manual preview plays at a time. Clicking another pad stops the previous clip. Global mute stops an active preview. The controller uses a DJ-table layout, with Push and Merge decks, a center master strip, and sample pads.
+Only one manual preview plays at a time. Starting another preview stops the previous sound. Global mute stops an active preview. Select the DJ or boombox layout to change the library appearance.
 
-Browse sample pads with **All**, **Push**, **Merge**, and **Failure**. These groups do not restrict routing. Each event can use any clip. Choices save locally. The initial defaults are **We build different**, **Branch outta here**, and **LEGO death**. The app saves the displayed choices before a new installation.
+Browse sounds with **All**, **Push**, **Merge**, and **Failure**. These groups do not restrict routing. Each event can use any listed sound. Choices save locally. The app saves the displayed choices before a new installation.
 
 Turn global mute off before previewing a clip. Global mute also suppresses manual playback.
 
@@ -86,7 +86,7 @@ Polling checks current heads of open pull requests and recent completed runs in 
 
 The first CI check sets a baseline without playing old failures. Muted and excluded failures are recorded without replay.
 
-The default CI sound is LEGO death. The library also includes Fahhh, the Metal Gear alert, and the Windows XP error. People can choose another clip.
+Choose a sound for CI alerts from the library. This choice is separate from the push and merge sound choices.
 
 This covers Actions workflow failures, not every third-party check provider. A signed local replay used a real failed run and the GitHub API. It recorded one event and rejected the duplicate. Read-only checks also traced three real release-chain runs through a bot release PR to Max's source PR. Those release runs succeeded, so they verify attribution rather than failure playback. A new failing deployment has not been triggered for this test.
 

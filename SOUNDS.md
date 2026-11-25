@@ -4,9 +4,9 @@ Each event can use any listed clip. Preview and select clips locally in the app.
 
 | ID | Clip | Source |
 | --- | --- | --- |
-| `stackaholics` | Stackaholics! We build different! | TagMyBeat; Max approved the generated clip and confirmed source-voice authorization. |
-| `stackaholics-welcome-to-main` | Stackaholics! Welcome to main! | TagMyBeat; same authorized reference voice. |
-| `stackaholics-thats-a-wrap` | Stackaholics! That's a wrap! | TagMyBeat; same authorized reference voice. |
+| `stackaholics` | We build different! | TagMyBeat; Max approved the generated clip and confirmed source-voice authorization. |
+| `stackaholics-welcome-to-main` | Welcome to main! | TagMyBeat; same authorized reference voice. |
+| `stackaholics-thats-a-wrap` | That's a wrap! | TagMyBeat; same authorized reference voice. |
 | `branch-outta-here` | Branch outta here! | TagMyBeat; Max confirmed authorization for the Wheezy reference voice. |
 | `dj-khaled-another-one` | Another one | [Myinstants](https://www.myinstants.com/en/search/?name=dj+khaled+another+one) |
 | `lego-break-apart` | LEGO death — break-apart clip (1.65 s) | [Myinstants](https://www.myinstants.com/en/instant/lego-breaking-57805/) · [requested reference](https://www.youtube.com/watch?v=8Z0JhcWURDY) |
@@ -19,7 +19,9 @@ The downloaded recordings are community uploads. They were converted from MP3 to
 
 The rejected macOS speech demos and unused source clips remain outside the distributed app. The unused "Mergey outta here" version remains in Max's local source folder.
 
-The default push clip is `stackaholics`. The default merge clip is `branch-outta-here`. The default CI clip is `lego-break-apart`. Each person can change these choices.
+Choose a sound for each event in the app. All listed clips are available for explicit selection. Each person saves their own choices.
+
+Sound IDs and file names remain stable so existing selections continue to work. A display name can change without changing the audio or its ID.
 
 ## Use-case groups
 

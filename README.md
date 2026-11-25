@@ -10,25 +10,22 @@ The [Apple Silicon app](MAC_APP.md) has DJ and boombox layouts, local previews, 
 
 Optional local sounds for successful Git pushes, GitHub PR merges, and attributed GitHub Actions failures on macOS.
 
-The pilot clip says: **Stackaholics! We build different!** Max approved this clip. Each person installs the tool on their own Mac. There is no team broadcast or automatic enrollment.
+Choose a sound for each event from the shared library. Each person installs the tool on their own Mac. There is no team broadcast or automatic enrollment.
 
-## Listen first
+## Choose sounds
 
-```sh
-afplay audio/stackaholics.wav
-```
+Use the app's Push, Merge, and Failure groups to browse the library. Double-click a sound to preview it. Use each event's menu to save its sound assignment.
 
-## Saved merge tags
-
-The merge clips are included. Select one when you want to change the merge sound:
+The terminal commands can also list and preview sounds:
 
 ```sh
-python3 push_tags.py configure --merge-tag stackaholics-welcome-to-main
-python3 push_tags.py configure --merge-tag stackaholics-thats-a-wrap
-python3 push_tags.py configure --merge-tag branch-outta-here
+python3 push_tags.py list
+python3 push_tags.py play --event push
+python3 push_tags.py play --event merge
+python3 push_tags.py play --event ci
 ```
 
-The push sound has its own setting. Adding these files does not change an existing selection.
+Preview commands use your saved selection when one is available. See [sound sources and library updates](SOUNDS.md) for the available clips. Use `python3 push_tags.py configure --help` for terminal selection options.
 
 ## Requirements
 
@@ -42,10 +39,9 @@ Clone this repository into a permanent folder. Open Terminal in that folder. Aut
 gh auth login
 ```
 
-Select the pilot clip for both events:
+Check the required commands and GitHub access:
 
 ```sh
-python3 push_tags.py configure --push-tag stackaholics --merge-tag stackaholics --push on --merge on
 python3 push_tags.py doctor
 ```
 
@@ -135,11 +131,9 @@ zsh -n shell.zsh
 
 The unit tests use simulated Git, GitHub, audio, and time responses. They do not push or merge code. These checks do not establish that the tool works with every Git client.
 
-The clip was generated with TagMyBeat from a source voice. Max confirmed authorization to clone that voice. No license for third-party source voices is granted by this repository.
+The library contains generated tags and downloaded recordings. See [sound sources](SOUNDS.md) for each clip. This repository grants no rights to third-party recordings or voices.
 
 Sources: [Fenzo guide](https://fenzo.ai/courses/drop-your-producer-tag-every-git-push/hear-it-on-your-OuM3wCUFM), [Git hooks](https://git-scm.com/docs/githooks#_pre_push), and [GitHub event limits](https://docs.github.com/en/rest/activity/events).
-
-Max approved the "Branch outta here!" parody as his merge sound. It was generated with TagMyBeat from the Wheezy reference voice after Max confirmed authorization to clone that voice.
 
 ## GitHub webhook pilot
 
@@ -178,15 +172,3 @@ An organization pilot uses `--org lola-labs` after the required organization-cha
 Validation: a real squash merge on temporary branches in the personal repository reached the receiver while polling was paused. A second signed delivery returned `recorded: false`. Polling was then restored. The test did not change `main`.
 
 Source: [GitHub CLI webhook forwarding](https://docs.github.com/en/webhooks/testing-and-troubleshooting-webhooks/using-the-github-cli-to-forward-webhooks-for-testing).
-
-## Another one
-
-The optional DJ Khaled clip uses the existing player and settings:
-
-```sh
-push-tags play dj-khaled-another-one
-push-tags configure --push-tag dj-khaled-another-one
-push-tags configure --merge-tag dj-khaled-another-one
-```
-
-Adding the clip does not change an existing sound selection. The [source recording](https://www.myinstants.com/en/search/?name=dj+khaled+another+one) is a community upload converted from MP3. This repository grants no rights to that recording.

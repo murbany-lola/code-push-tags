@@ -222,3 +222,11 @@ The trailer is 29.5 seconds at 1440 × 1080. It uses three app-window recordings
 A real merge-notification sound played while Slack remained in front. Focus did not change during the observation. Recording controls, rather than the notification path, brought the app forward during trailer work. The previous foreground app and saved layout/mute state were restored after recording.
 
 The pre-merge gate skipped review because the changes contain documentation and generated media only. Prod net LOC, test net LOC, new prod files, tables, columns, and data resources remain zero for this change. No app code changed.
+
+## General sound-library language
+
+Decided by: person (Max). Use general app language instead of one tag's name. Max also approved direct pushes to `main` for this personal repository.
+
+The onboarding guides use event-based preview commands. Three sound display names no longer include the producer-tag prefix. Their IDs, file paths, audio, event categories, and saved selections are unchanged. Source attribution remains in SOUNDS.md.
+
+Validation: the manifest parser accepted all 10 entries. A comparison with the previous manifest confirmed that only display names changed. All referenced audio files exist. The diff check passed. The pre-merge gate skipped review for a six-line production change with no new files, schema, or release change. Prod net LOC, test net LOC, new prod files, tables, columns, and data resources are zero. No app build was needed. A complete ASD-STE100 dictionary check was not performed.
