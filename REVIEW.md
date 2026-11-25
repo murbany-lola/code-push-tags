@@ -50,3 +50,18 @@ The original Wheezy clip uses the existing manifest and selection command. All s
 | New prod files | 1 | 1 |
 
 reuse-hunter: pass; no findings. All four WAV files decode. The manifest IDs are unique. The local push selection remains `stackaholics`.
+
+## Branch parody selection
+
+Max selected "Branch outta here!" as the merge sound. It uses the existing manifest and configuration.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 7 | 7 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+reuse-hunter: pass; no findings. The WAV file decodes. The local merge selection is `branch-outta-here`. The push selection remains `stackaholics`.
