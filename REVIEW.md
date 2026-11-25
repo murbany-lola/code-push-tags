@@ -104,3 +104,58 @@ The optional DJ Khaled clip uses the existing manifest, player, and selection co
 | New prod files | 1 | 1 |
 
 reuse-hunter: pass; no findings. The manifest ID is unique. The WAV decodes and lasts 0.83 seconds. No runtime code changed.
+
+## Native DJ prototype, repo selection, and CI/CD alerts
+
+The native app reuses the existing settings and notification tools. It adds a DJ-table layout, local sample pads, use-case groups, one preview player, repo/org selection, and one master mute.
+
+CI/CD alerts use verified actor, exact PR commit, or explicit bot source-PR attribution. Polling and signed webhook deliveries share event identities.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 917 | 1461 |
+| Test net LOC | 430 | 578 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 10 | 10 |
+
+The before values cover the initial native prototype. The after values cover the final requested DJ layout and expanded CI/CD attribution. Incremental review used private snapshots `dab9be9` and `cb6c194`; those snapshots are not part of the branch history.
+
+- reuse-hunter: pass; no findings. Incremental review passed.
+- loc-minimizer: pass; no required cuts. Incremental review passed.
+- path-correctness: major; fresh install did not save the displayed defaults. Applied: save all choices before installation. Round 2 passed. Incremental review passed.
+
+Local feedback fixes: Dock reopen, Cancel restoring the controller, one-request repo refresh with preserved search/checks, preview replacement, and global mute. Runtime subprocesses disable bytecode writes after a real package signature failure.
+
+A real expired test hook returned HTTP 404 and blocked restart. Applied: accept an exact HTTP 404 as already removed. Other errors preserve hook identity. Fifteen listener tests passed, including this regression.
+
+Validation: 105 focused unit tests passed across the changed runtime paths. Swift typecheck, Python syntax, shell syntax, and plist checks passed. Max approved the targeted local build and UI tests.
+
+The Apple Silicon app was built and opened. Manual checks exercised preview replacement, master mute and restore, Cancel without minimizing, repo refresh, window reopen, and selection persistence. Signature checks passed after runtime use. The bundle contains 6 allowlisted runtime files and 11 sound files, with no private settings, credentials, or recording caches.
+
+Provider checks used the pilot credential from Keychain. A signed isolated local replay verified a real failed run through GitHub and suppressed the duplicate. Real successful release-chain runs validated bot-source attribution. No new failing deployment was triggered. The temporary organization hook is active for PR and workflow events; polling remains installed.
+
+The app is a local ad-hoc-signed Apple Silicon prototype. It is not notarized, released to friends, or configured for automatic updates. Intel support is deferred. Technical text was checked for short, direct instructions; a complete ASD-STE100 dictionary check was not performed.
+
+## Saved layouts and transport animation
+
+Both layouts use the existing event controls and settings. The separate artwork view replaces the previous static record view.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 238 | 239 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+- reuse-hunter: pass; no findings.
+- loc-minimizer: pass; no findings.
+- path-correctness: minor; selection animation ran before artwork layout. Applied: complete artwork layout before the selection animation.
+- path-correctness: minor; preview motion resumed before restored sound choices. Applied: restore choices before preview motion resumes.
+
+Validation: the targeted Apple Silicon build passed. The app signature check passed. A temporary Swift check verified the first selection animation, continuous preview motion, a save during a preview, and stopping all motion. It used animation state checks without time delays. Native UI checks verified both layout switches and the saved boombox choice after an app restart. Screenshots show both layouts. Build 4 is installed locally. No release was published.
+
+The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.

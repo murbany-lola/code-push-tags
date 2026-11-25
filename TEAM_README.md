@@ -1,5 +1,7 @@
 # Code Push Tags: coworker setup
 
+A [native Apple Silicon app prototype](MAC_APP.md) is available for local testing. Team distribution is pending that test. The terminal setup below remains available.
+
 Play a short audio tag after your successful Git pushes and GitHub PR merges. Installation is optional. Each person controls their own Mac and sound choices.
 
 ## Before you start

@@ -18,6 +18,9 @@ MAX_BODY = 1024 * 1024
 
 def handle_event(event, payload, now=None):
     """Confirm and record one merged pull request before playback."""
+    if event == 'workflow_run':
+        import ci_events
+        return ci_events.handle_event(payload, now)
     pr = payload.get('pull_request')
     if (event != 'pull_request' or payload.get('action') != 'closed'
             or not isinstance(pr, dict) or pr.get('merged') is not True):
@@ -61,7 +64,9 @@ def handle_event(event, payload, now=None):
         seen[identity] = merged_at
         state['seen'] = sorted(seen.items(), key=lambda pair: pair[1])[-2000:]
         app.write_json(path, state)
-        app.notify('merge')
+        import repo_preferences
+        if repo_preferences.allowed(repo):
+            app.notify('merge')
         return True
 
 
@@ -119,10 +124,13 @@ def main():
     secret = os.environ.get('PUSH_TAGS_WEBHOOK_SECRET')
     if not secret:
         raise RuntimeError('PUSH_TAGS_WEBHOOK_SECRET is required.')
-    if not (app.state_dir() / 'merges.json').exists():
+    if app.config().get('merge_enabled', True) and not (app.state_dir() / 'merges.json').exists():
         app.poll()
-    if not (app.state_dir() / 'merges.json').exists():
+    if app.config().get('merge_enabled', True) and not (app.state_dir() / 'merges.json').exists():
         raise RuntimeError('Enable merge sounds before starting the receiver.')
+    if not (app.state_dir() / 'ci.json').exists():
+        import ci_events
+        ci_events.poll()
     with HTTPServer(('127.0.0.1', args.port), Handler) as server:
         server.webhook_secret = secret.encode()
         print(f'Webhook test receiver: http://127.0.0.1:{server.server_port}/webhook', flush=True)
