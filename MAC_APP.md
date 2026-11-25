@@ -115,3 +115,15 @@ Use a new output folder. The build creates an Apple Silicon app and `Code-Push-T
 The app bundle excludes credentials, private state, webhook payloads, source-recording caches, and rejected demos. Settings remain in `~/Library/Application Support/Code Push Tags/`. Credentials remain in Keychain.
 
 See [updates and releases](UPDATES.md), [sound sources](SOUNDS.md), and [review evidence](REVIEW.md).
+
+## Layouts and animation
+
+Select **DJ DECKS** or **BOOMBOX** at the top of the window. The app saves this choice in `appearance.json` in its local settings folder. The choice stays after you close the app. Both layouts use the same sound selections, repository filters, and master mute.
+
+The DJ layout has two record decks. The boombox layout has two speakers and a cassette. A successful sound-selection save starts a short animation. During a preview, the record or cassette reels turn. A new preview stops the previous sound and animation. Master mute stops the preview. The app reduces motion when the macOS Reduce Motion setting is on.
+
+Decided by: person (Max). Max requested both layouts, local storage, and record or cassette animation.
+
+| DJ decks | Boombox |
+| --- | --- |
+| ![DJ decks](docs/dj-layout.png) | ![Boombox](docs/boombox-layout.png) |

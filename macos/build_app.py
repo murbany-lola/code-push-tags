@@ -38,7 +38,7 @@ def build(output):
         plistlib.dump(info, stream)
     subprocess.run(['xcrun', 'swiftc', '-swift-version', '5', '-O', '-framework', 'AppKit',
                     '-target', 'arm64-apple-macosx12.0',
-                    str(ROOT / 'macos/CodePushTags.swift'), '-o', str(binary)], check=True)
+                    str(ROOT / 'macos/CodePushTags.swift'), str(ROOT / 'macos/TransportArtwork.swift'), '-o', str(binary)], check=True)
     subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True)
     archive = output / 'Code-Push-Tags-macOS.zip'
     subprocess.run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', str(app), str(archive)], check=True)

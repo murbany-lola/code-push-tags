@@ -137,3 +137,25 @@ The Apple Silicon app was built and opened. Manual checks exercised preview repl
 Provider checks used the pilot credential from Keychain. A signed isolated local replay verified a real failed run through GitHub and suppressed the duplicate. Real successful release-chain runs validated bot-source attribution. No new failing deployment was triggered. The temporary organization hook is active for PR and workflow events; polling remains installed.
 
 The app is a local ad-hoc-signed Apple Silicon prototype. It is not notarized, released to friends, or configured for automatic updates. Intel support is deferred. Technical text was checked for short, direct instructions; a complete ASD-STE100 dictionary check was not performed.
+
+## Saved layouts and transport animation
+
+Both layouts use the existing event controls and settings. The separate artwork view replaces the previous static record view.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 238 | 239 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+- reuse-hunter: pass; no findings.
+- loc-minimizer: pass; no findings.
+- path-correctness: minor; selection animation ran before artwork layout. Applied: complete artwork layout before the selection animation.
+- path-correctness: minor; preview motion resumed before restored sound choices. Applied: restore choices before preview motion resumes.
+
+Validation: the targeted Apple Silicon build passed. The app signature check passed. A temporary Swift check verified the first selection animation, continuous preview motion, a save during a preview, and stopping all motion. It used animation state checks without time delays. Native UI checks verified both layout switches and the saved boombox choice after an app restart. Screenshots show both layouts. Build 4 is installed locally. No release was published.
+
+The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.

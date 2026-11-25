@@ -41,40 +41,6 @@ final class HardwareView: NSView {
     }
 }
 
-final class VinylPlatter: NSView {
-    var accent = mint
-    override func draw(_ dirtyRect: NSRect) {
-        let diameter = min(bounds.width, bounds.height) - 4
-        let center = NSPoint(x: bounds.midX, y: bounds.midY)
-        let circle = NSRect(x: center.x - diameter / 2, y: center.y - diameter / 2, width: diameter, height: diameter)
-        NSColor(srgbRed: 0.28, green: 0.29, blue: 0.32, alpha: 1).setFill()
-        NSBezierPath(ovalIn: circle).fill()
-        NSColor(srgbRed: 0.035, green: 0.038, blue: 0.043, alpha: 1).setFill()
-        NSBezierPath(ovalIn: circle.insetBy(dx: 5, dy: 5)).fill()
-        NSColor.white.withAlphaComponent(0.085).setStroke()
-        for inset in stride(from: CGFloat(10), through: diameter * 0.32, by: 4) {
-            NSBezierPath(ovalIn: circle.insetBy(dx: inset, dy: inset)).stroke()
-        }
-        accent.withAlphaComponent(0.88).setFill()
-        let labelSize = diameter * 0.28
-        NSBezierPath(ovalIn: NSRect(x: center.x - labelSize / 2, y: center.y - labelSize / 2, width: labelSize, height: labelSize)).fill()
-        let centerLabel = "P / T" as NSString
-        centerLabel.draw(at: NSPoint(x: center.x - 13, y: center.y - 4), withAttributes: [.font: NSFont.monospacedSystemFont(ofSize: 9, weight: .heavy), .foregroundColor: NSColor.black.withAlphaComponent(0.75)])
-        NSColor.white.setFill()
-        NSBezierPath(ovalIn: NSRect(x: center.x - 1.5, y: center.y - 1.5, width: 3, height: 3)).fill()
-        let arm = NSBezierPath()
-        arm.move(to: NSPoint(x: circle.maxX - 5, y: circle.maxY - 4))
-        arm.line(to: NSPoint(x: circle.maxX - 5, y: center.y + 5))
-        arm.line(to: NSPoint(x: center.x + 27, y: center.y - 12))
-        arm.lineWidth = 3
-        NSColor(srgbRed: 0.65, green: 0.67, blue: 0.72, alpha: 1).setStroke(); arm.stroke()
-        NSColor.white.withAlphaComponent(0.8).setFill()
-        NSBezierPath(roundedRect: NSRect(x: center.x + 22, y: center.y - 16, width: 10, height: 6), xRadius: 2, yRadius: 2).fill()
-        accent.setFill()
-        NSBezierPath(ovalIn: NSRect(x: circle.maxX - 9, y: circle.maxY - 8, width: 8, height: 8)).fill()
-    }
-}
-
 class HardwareButton: NSButton {
     var accent: NSColor = mint
     override func draw(_ dirtyRect: NSRect) {
@@ -136,6 +102,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private let bankCount = NSTextField(labelWithString: "")
     private var filterButtons: [String: HardwareButton] = [:]
     private var soundFilter = "all"
+    private let transportHost = NSStackView()
+    private var transportArt: [String: TransportArtwork] = [:]
+    private var layoutStyle = "dj"
     private var previewSound: NSSound?
     private var previewID: String?
     private var window: NSWindow!
@@ -170,6 +139,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             NSApp.terminate(nil)
             return
         }
+        layoutStyle = readObject("appearance.json")["layout"] as? String == "boombox" ? "boombox" : "dj"
         makeMenus()
         makeWindow()
         refreshSettings()
@@ -270,17 +240,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     }
 
     private func eventDeck(_ event: String, title: String, color: NSColor) -> NSView {
-        let (deck, stack) = panel(width: 392, height: 232)
+        let boom = layoutStyle == "boombox"
+        let width: CGFloat = boom ? 300 : 392
+        let (deck, stack) = panel(width: width, height: 232)
         let headerSpacer = NSView(); headerSpacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
         let header = NSStackView(views: [label(title, size: 11, color: color), headerSpacer, label("33⅓  /  STEREO", size: 8)])
         stack.addArrangedSubview(header)
         header.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        let vinyl = VinylPlatter()
+        let vinyl = TransportArtwork()
+        vinyl.style = boom ? .speaker : .vinyl
+        transportArt[event] = vinyl
         vinyl.accent = color
         vinyl.widthAnchor.constraint(equalToConstant: 124).isActive = true
         vinyl.heightAnchor.constraint(equalToConstant: 124).isActive = true
         stack.addArrangedSubview(vinyl)
-        stack.addArrangedSubview(eventPopup(event, width: 368))
+        stack.addArrangedSubview(eventPopup(event, width: width - 24))
         let toggle = eventToggle(event, title: "AUTO-PLAY", color: color)
         let space = NSView(); space.setContentHuggingPriority(.defaultLow, for: .horizontal)
         let cue = cueButton(event, color: color)
@@ -292,24 +266,89 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     }
 
     private func masterPanel() -> NSView {
-        let (master, stack) = panel(width: 216, height: 232)
-        stack.addArrangedSubview(label("MASTER", size: 11, color: .white.withAlphaComponent(0.9)))
-        powerStatus.font = .monospacedSystemFont(ofSize: 10, weight: .semibold)
-        stack.addArrangedSubview(powerStatus)
+        let boom = layoutStyle == "boombox"
+        let width: CGFloat = boom ? 400 : 216
+        let (master, stack) = panel(width: width, height: 232)
+        let heading = NSStackView(views: [label(boom ? "STEREO CASSETTE" : "MASTER", size: 11, color: .white), powerStatus])
+        heading.spacing = 12
+        stack.addArrangedSubview(heading)
+        powerStatus.font = .monospacedSystemFont(ofSize: 9, weight: .semibold)
+        if boom {
+            let tape = TransportArtwork()
+            tape.style = .cassette; tape.accent = mint
+            tape.widthAnchor.constraint(equalToConstant: 260).isActive = true
+            tape.heightAnchor.constraint(equalToConstant: 76).isActive = true
+            transportArt["cassette"] = tape
+            stack.addArrangedSubview(tape)
+        }
         muteButton.target = self; muteButton.action = #selector(toggleMute); muteButton.isBordered = false
-        muteButton.widthAnchor.constraint(equalToConstant: 192).isActive = true
-        muteButton.heightAnchor.constraint(equalToConstant: 44).isActive = true
+        muteButton.translatesAutoresizingMaskIntoConstraints = false
+        muteButton.heightAnchor.constraint(equalToConstant: boom ? 32 : 44).isActive = true
         stack.addArrangedSubview(muteButton)
-        let separator = NSBox(); separator.boxType = .separator
-        stack.addArrangedSubview(separator)
-        separator.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
-        stack.addArrangedSubview(label("FAILURE FX", size: 9, color: coral))
-        stack.addArrangedSubview(eventToggle("ci", title: "CI / CD", color: coral))
-        stack.addArrangedSubview(eventPopup("ci", width: 192))
+        muteButton.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+        if !boom {
+            let separator = NSBox(); separator.boxType = .separator
+            stack.addArrangedSubview(separator)
+            separator.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
+            stack.addArrangedSubview(label("FAILURE FX", size: 9, color: coral))
+        }
+        let toggle = eventToggle("ci", title: "CI / CD", color: coral)
+        if !boom { stack.addArrangedSubview(toggle) }
+        stack.addArrangedSubview(eventPopup("ci", width: width - 24))
         let cue = cueButton("ci", color: coral)
-        cue.widthAnchor.constraint(equalToConstant: 192).isActive = true
-        stack.addArrangedSubview(cue)
+        if boom {
+            let controls = NSStackView(views: [toggle, cue]); controls.spacing = 20
+            cue.widthAnchor.constraint(equalToConstant: 170).isActive = true
+            stack.addArrangedSubview(controls)
+        } else {
+            cue.widthAnchor.constraint(equalToConstant: width - 24).isActive = true
+            stack.addArrangedSubview(cue)
+        }
         return master
+    }
+
+    private func rebuildTransport() {
+        for artwork in transportArt.values { artwork.setRunning(false) }
+        transportArt.removeAll()
+        for view in transportHost.arrangedSubviews {
+            transportHost.removeArrangedSubview(view); view.removeFromSuperview()
+        }
+        // Remove constraints from the previous layout before the shared controls move.
+        NSLayoutConstraint.deactivate(muteButton.constraints)
+        popups.removeAll(); switches.removeAll()
+        let boom = layoutStyle == "boombox"
+        transportHost.addArrangedSubview(eventDeck("push", title: boom ? "LEFT / PUSH" : "DECK A / PUSH", color: mint))
+        transportHost.addArrangedSubview(masterPanel())
+        transportHost.addArrangedSubview(eventDeck("merge", title: boom ? "RIGHT / MERGE" : "DECK B / MERGE", color: violet))
+    }
+
+    @objc private func changeLayout(_ sender: NSSegmentedControl) {
+        let selected = sender.selectedSegment == 1 ? "boombox" : "dj"
+        do {
+            try FileManager.default.createDirectory(at: state, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
+            let data = try JSONSerialization.data(withJSONObject: ["layout": selected])
+            try data.write(to: state.appendingPathComponent("appearance.json"), options: .atomic)
+        } catch {
+            sender.selectedSegment = layoutStyle == "boombox" ? 1 : 0
+            alert("Layout could not be saved.", error.localizedDescription)
+            return
+        }
+        layoutStyle = selected
+        rebuildTransport(); refreshSettings()
+        if previewSound?.isPlaying == true { animateTransport(for: previewID) }
+        for artwork in transportArt.values { artwork.pulse() }
+        status.stringValue = "Layout saved on this Mac."
+    }
+
+    private func animateTransport(for tag: String?, event: String? = nil, pulse: Bool = false) {
+        let matching = ["push", "merge"].filter { popups[$0]?.selectedItem?.representedObject as? String == tag }
+        let fallback = tags.first(where: { $0.id == tag }).map { useCases($0).contains("merge") ? "merge" : "push" } ?? "push"
+        for (key, artwork) in transportArt {
+            let selected = key == "cassette" || key == event || (event == nil && (matching.isEmpty ? key == fallback : matching.contains(key)))
+            if selected {
+                if pulse { artwork.pulse() } else { artwork.setRunning(true) }
+            }
+        }
     }
 
     private func makeWindow() {
@@ -340,13 +379,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let space = NSView(); space.setContentHuggingPriority(.defaultLow, for: .horizontal)
         previewStatus.font = .monospacedSystemFont(ofSize: 10, weight: .medium)
         previewStatus.textColor = .secondaryLabelColor
-        let header = NSStackView(views: [brand, space, previewStatus]); header.spacing = 12
+        let layout = NSSegmentedControl(labels: ["DJ DECKS", "BOOMBOX"], trackingMode: .selectOne, target: self, action: #selector(changeLayout))
+        layout.selectedSegment = layoutStyle == "boombox" ? 1 : 0
+        layout.setAccessibilityLabel("App layout")
+        let header = NSStackView(views: [brand, space, layout, previewStatus]); header.spacing = 12
         outer.addArrangedSubview(header)
         header.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
-        let decks = NSStackView(views: [eventDeck("push", title: "DECK A  /  PUSH", color: mint), masterPanel(),
-                                        eventDeck("merge", title: "DECK B  /  MERGE", color: violet)])
-        decks.spacing = 12
-        outer.addArrangedSubview(decks)
+        transportHost.spacing = 12
+        rebuildTransport()
+        outer.addArrangedSubview(transportHost)
         let bankSpacer = NSView(); bankSpacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
         let filters = NSStackView(); filters.spacing = 5
         for (key, title) in [("all", "ALL"), ("push", "PUSH"), ("merge", "MERGE"), ("ci", "FAILURE")] {
@@ -583,7 +624,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     @objc private func saveSelection(_ sender: NSControl) {
         guard let event = sender.identifier?.rawValue,
               let tag = popups[event]?.selectedItem?.representedObject as? String else { return }
-        invoke("push_tags.py", ["configure", "--" + event + "-tag", tag, "--" + event, switches[event]?.state == .on ? "on" : "off"])
+        invoke("push_tags.py", ["configure", "--" + event + "-tag", tag, "--" + event, switches[event]?.state == .on ? "on" : "off"]) { [weak self] success in
+            if success { self?.animateTransport(for: tag, event: event, pulse: true) }
+        }
     }
 
     @objc private func previewEvent(_ sender: NSButton) {
@@ -602,6 +645,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         previewSound = nil
         previewID = nil
         for pad in pads.values { pad.playing = false }
+        for artwork in transportArt.values { artwork.setRunning(false) }
         previewStatus.stringValue = muted ? "PREVIEW MUTED" : "READY TO PLAY"
     }
 
@@ -621,7 +665,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         pads[identifier]?.playing = true
         previewStatus.stringValue = "▶  " + (pads[identifier]?.label ?? tag.text.uppercased())
         status.stringValue = "Preview: " + tag.text
-        if !sound.play() { stopPreview(); status.stringValue = "The audio clip could not be played." }
+        if sound.play() { animateTransport(for: identifier) }
+        else { stopPreview(); status.stringValue = "The audio clip could not be played." }
     }
 
     func sound(_ sound: NSSound, didFinishPlaying flag: Bool) {
@@ -867,8 +912,13 @@ final class RepositorySheet: NSObject, NSTableViewDataSource, NSTableViewDelegat
     }
 }
 
-let app = NSApplication.shared
-let delegate = AppDelegate()
-app.delegate = delegate
-app.setActivationPolicy(.regular)
-app.run()
+@main
+enum CodePushTagsMain {
+    static func main() {
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        app.setActivationPolicy(.regular)
+        app.run()
+    }
+}
