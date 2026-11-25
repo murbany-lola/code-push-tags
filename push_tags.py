@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import random
+import re
 import shutil
 import subprocess
 import sys
@@ -55,10 +56,10 @@ def play(event='any', tag_id=None):
     if read_json(state_dir() / 'settings.json', {}).get('muted', False):
         return False
     preferences = config()
-    if event in ('push', 'merge', 'ci') and not preferences.get(f'{event}_enabled', True):
+    if event in ('push', 'merge', 'ci', 'comment') and not preferences.get(f'{event}_enabled', True):
         return False
-    if tag_id is None and event in ('push', 'merge', 'ci'):
-        tag_id = preferences.get(f'{event}_tag', 'lego-break-apart' if event == 'ci' else None)
+    if tag_id is None and event in ('push', 'merge', 'ci', 'comment'):
+        tag_id = preferences.get(f'{event}_tag', {'ci': 'lego-break-apart', 'comment': 'aol-youve-got-mail'}.get(event))
         if tag_id == 'random':
             tag_id = None
     choices = [tag for tag in tags() if (tag_id is None or tag['id'] == tag_id)
@@ -115,10 +116,19 @@ def gh_env():
     return env
 
 
+class GitHubAPIError(RuntimeError):
+    """Keep the HTTP status without keeping the provider response."""
+
+    def __init__(self, status_code=None):
+        self.status_code = status_code
+        super().__init__('GitHub request failed. Check gh authentication and network access.')
+
+
 def gh_json(args, env):
     result = subprocess.run(['gh', *args], env=env, capture_output=True, text=True)
     if result.returncode:
-        raise RuntimeError('GitHub request failed. Check gh authentication and network access.')
+        status = re.search(r'\(HTTP ([0-9]{3})\)', result.stderr or '')
+        raise GitHubAPIError(int(status[1]) if status else None)
     return json.loads(result.stdout)
 
 
@@ -292,6 +302,7 @@ def doctor():
 def poll_all():
     import ci_events
     import repo_preferences
+    import comment_events
     connection = repo_preferences.listener_status()
     recovery_path = state_dir() / 'webhook-recovery.json'
     recovery = read_json(recovery_path, {})
@@ -299,8 +310,13 @@ def poll_all():
                   == (connection.get('target') or '').casefold())
     failures = []
     complete = True
-    for check, event in ((poll, 'pull_request'), (ci_events.poll, 'workflow_run')):
-        target = None if recovering else live_target(connection, event)
+    comment_live = {event: live_target(connection, event) for event in comment_events.EVENTS}
+    checks = ((poll, live_target(connection, 'pull_request')),
+              (ci_events.poll, live_target(connection, 'workflow_run')),
+              (comment_events.poll, comment_live if any(comment_live.values()) else None))
+    for check, target in checks:
+        if recovering:
+            target = None
         try:
             result = check(live=target) if target else check()
             if result is False:
@@ -324,7 +340,7 @@ def main():
     commands.add_parser('list')
     player = commands.add_parser('play')
     player.add_argument('tag', nargs='?')
-    player.add_argument('--event', choices=['any', 'push', 'merge', 'ci'], default='any')
+    player.add_argument('--event', choices=['any', 'push', 'merge', 'ci', 'comment'], default='any')
     commands.add_parser('off')
     commands.add_parser('on')
     for name in ('mute', 'unmute', 'poll', 'doctor'):
@@ -333,9 +349,11 @@ def main():
     preferences.add_argument('--push-tag')
     preferences.add_argument('--merge-tag')
     preferences.add_argument('--ci-tag')
+    preferences.add_argument('--comment-tag')
     preferences.add_argument('--push', choices=['on', 'off'])
     preferences.add_argument('--merge', choices=['on', 'off'])
     preferences.add_argument('--ci', choices=['on', 'off'])
+    preferences.add_argument('--comment', choices=['on', 'off'])
     commands.add_parser('push').add_argument('args', nargs=argparse.REMAINDER)
     commands.add_parser('notify-push').add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -351,7 +369,7 @@ def main():
     elif args.command == 'configure':
         settings = config()
         available = tags()
-        for event in ('push', 'merge', 'ci'):
+        for event in ('push', 'merge', 'ci', 'comment'):
             selected = getattr(args, f'{event}_tag')
             if selected is not None:
                 if selected != 'random' and not any(tag['id'] == selected for tag in available):

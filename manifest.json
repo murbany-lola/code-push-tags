@@ -92,6 +92,27 @@
       "use_cases": [
         "ci"
       ]
+    },
+    {
+      "id": "aol-youve-got-mail",
+      "text": "You've got mail",
+      "file": "audio/aol-youve-got-mail.wav",
+      "event": "any",
+      "use_cases": [
+        "push"
+      ],
+      "additional_use_cases": [
+        "comment"
+      ]
+    },
+    {
+      "id": "gta-mission-failed",
+      "text": "GTA V mission failed",
+      "file": "audio/gta-mission-failed.wav",
+      "event": "ci",
+      "use_cases": [
+        "ci"
+      ]
     }
   ]
 }

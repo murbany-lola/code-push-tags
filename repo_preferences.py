@@ -154,16 +154,19 @@ def connections():
                                       'access': 'unconfirmed'}
     merge_target = app.live_target(live, 'pull_request')
     ci_target = app.live_target(live, 'workflow_run')
+    comment_targets = [app.live_target(live, event) for event in
+                       ('issue_comment', 'pull_request_review_comment', 'pull_request_review')]
     for key, repo in found.items():
         confirmed = repo['access'] == 'confirmed'
         repo['merge_live'] = bool(confirmed and app.live_covers(key, merge_target))
         repo['ci_live'] = bool(confirmed and app.live_covers(key, ci_target))
+        repo['comment_live'] = bool(confirmed and all(app.live_covers(key, target) for target in comment_targets))
         if not confirmed:
             repo.update(connection='unconfirmed', reason='Repository access could not be confirmed. Refresh or check GitHub sign-in.')
-        elif repo['merge_live'] and repo['ci_live']:
-            repo.update(connection='live', reason='Live merge and CI events. Polling resumes if the connection stops.')
-        elif repo['merge_live'] or repo['ci_live']:
-            event = 'merge' if repo['merge_live'] else 'CI'
+        elif repo['merge_live'] and repo['ci_live'] and repo['comment_live']:
+            repo.update(connection='live', reason='Live merge, CI, and comment events. Polling resumes if the connection stops.')
+        elif repo['merge_live'] or repo['ci_live'] or repo['comment_live']:
+            event = ', '.join(name for name, key in [('merge', 'merge_live'), ('CI', 'ci_live'), ('comment', 'comment_live')] if repo[key])
             repo.update(connection='partial', reason=f'Live {event} events; other events use polling.')
         else:
             reason = live['reason'] if not live['connected'] else 'No connected listener covers this repository.'

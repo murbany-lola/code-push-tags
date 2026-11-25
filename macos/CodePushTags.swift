@@ -6,6 +6,7 @@ struct SoundTag: Decodable {
     let file: String
     let event: String?
     let use_cases: [String]?
+    let additional_use_cases: [String]?
 }
 
 struct Manifest: Decodable {
@@ -41,6 +42,7 @@ struct ConnectionReport: Decodable {
 
 private let mint = NSColor(srgbRed: 0.54, green: 0.96, blue: 0.69, alpha: 1)
 private let coral = NSColor(srgbRed: 1, green: 0.42, blue: 0.43, alpha: 1)
+private let amber = NSColor(srgbRed: 0.98, green: 0.78, blue: 0.43, alpha: 1)
 private let violet = NSColor(srgbRed: 0.69, green: 0.61, blue: 1, alpha: 1)
 
 final class HardwareView: NSView {
@@ -79,7 +81,7 @@ class HardwareButton: NSButton {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
-    private let events = [("push", "Successful push"), ("merge", "PR merged"), ("ci", "PR CI failure")]
+    private let events = [("push", "Successful push"), ("merge", "PR merged"), ("ci", "PR CI failure"), ("comment", "PR comment")]
     private var tags: [SoundTag] = []
     private var popups: [String: NSPopUpButton] = [:]
     private var switches: [String: NSButton] = [:]
@@ -90,6 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private let previewStatus = NSTextField(labelWithString: "READY TO PLAY")
     private var pads: [String: [LibraryItem]] = [:]
     private let padGrid = NSStackView()
+    private let libraryScroll = NSScrollView()
     private let bankCount = NSTextField(labelWithString: "")
     private var filterButtons: [String: HardwareButton] = [:]
     private var soundFilter = "all"
@@ -336,7 +339,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }
         // Remove constraints from the previous layout before the shared controls move.
         NSLayoutConstraint.deactivate(muteButton.constraints)
+        let commentPopup = popups["comment"]
+        let commentSwitch = switches["comment"]
         popups.removeAll(); switches.removeAll()
+        if let popup = commentPopup { popups["comment"] = popup }
+        if let toggle = commentSwitch { switches["comment"] = toggle }
         let boom = layoutStyle == "boombox"
         transportHost.addArrangedSubview(eventDeck("push", title: boom ? "LEFT / PUSH" : "DECK A / PUSH", color: mint))
         transportHost.addArrangedSubview(masterPanel())
@@ -432,14 +439,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         outer.addArrangedSubview(transportHost)
         let bankSpacer = NSView(); bankSpacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
         let filters = NSStackView(); filters.spacing = 5
-        for (key, title) in [("all", "ALL"), ("push", "PUSH"), ("merge", "MERGE"), ("ci", "FAILURE")] {
+        for (key, title) in [("all", "ALL"), ("push", "PUSH"), ("merge", "MERGE"), ("ci", "FAILURE"), ("comment", "COMMENTS")] {
             let button = HardwareButton(title: title, target: self, action: #selector(filterSounds))
             button.identifier = NSUserInterfaceItemIdentifier(key)
             button.isBordered = false; button.setButtonType(.toggle)
             button.setAccessibilityLabel("Show " + title.lowercased() + " sounds")
-            button.widthAnchor.constraint(equalToConstant: 70).isActive = true
+            button.widthAnchor.constraint(equalToConstant: key == "comment" ? 86 : 70).isActive = true
             button.heightAnchor.constraint(equalToConstant: 24).isActive = true
-            button.accent = key == "ci" ? coral : (key == "merge" ? violet : mint)
+            button.accent = key == "ci" ? coral : (key == "merge" ? violet : (key == "comment" ? amber : mint))
             filterButtons[key] = button
             filters.addArrangedSubview(button)
         }
@@ -454,8 +461,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         outer.addArrangedSubview(bank)
         bank.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
         padGrid.orientation = .horizontal; padGrid.spacing = 8; padGrid.alignment = .top
-        padGrid.heightAnchor.constraint(equalToConstant: 276).isActive = true
-        outer.addArrangedSubview(padGrid)
+        libraryScroll.drawsBackground = false
+        libraryScroll.hasHorizontalScroller = true
+        libraryScroll.hasVerticalScroller = false
+        libraryScroll.documentView = padGrid
+        libraryScroll.heightAnchor.constraint(equalToConstant: 276).isActive = true
+        outer.addArrangedSubview(libraryScroll)
+        libraryScroll.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
         rebuildPads()
         scopeStatus.font = .monospacedSystemFont(ofSize: 10, weight: .medium)
         scopeStatus.textColor = .white.withAlphaComponent(0.7)
@@ -474,7 +486,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let actions = NSStackView(views: [hardwareButton("ENABLE ON THIS MAC…", action: #selector(enableSetup)),
             hardwareButton("REMOVE SETUP…", action: #selector(removeSetup), color: .secondaryLabelColor),
             hardwareButton("GITHUB SIGN-IN", action: #selector(signIn), color: .secondaryLabelColor),
-            hardwareButton("CHECK SETUP", action: #selector(checkSetup), color: .secondaryLabelColor)])
+            hardwareButton("CHECK SETUP", action: #selector(checkSetup), color: .secondaryLabelColor),
+            hardwareButton("COMMENTS…", action: #selector(showCommentSettings), color: amber)])
         actions.spacing = 8
         outer.addArrangedSubview(actions)
         status.font = .systemFont(ofSize: 11); status.textColor = .secondaryLabelColor; status.maximumNumberOfLines = 2
@@ -484,8 +497,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     }
 
     private func useCases(_ tag: SoundTag) -> [String] {
-        if let cases = tag.use_cases { return cases }
-        return tag.event == "any" || tag.event == nil ? ["push", "merge", "ci"] : [tag.event!]
+        let basic = tag.use_cases ?? (tag.event == "any" || tag.event == nil ? ["push", "merge", "ci"] : [tag.event!])
+        return basic + (tag.additional_use_cases ?? [])
     }
 
     @objc private func filterSounds(_ sender: NSButton) {
@@ -503,7 +516,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
                      "stackaholics-thats-a-wrap": "THAT’S A WRAP", "branch-outta-here": "BRANCH OUTTA HERE", "dj-khaled-another-one": "ANOTHER ONE",
                      "lego-yoda-death": "LEGO YODA", "lego-break-apart": "LEGO DEATH", "terio-kill-em": "TERIO KILL ’EM",
                      "metal-gear-alert": "METAL GEAR ALERT", "windows-xp-error": "WINDOWS XP", "fahhh": "FAHHH"]
-        for (event, title, color) in [("push", "PUSH", mint), ("merge", "MERGE", violet), ("ci", "FAILURE", coral)] {
+        for (event, title, color) in [("push", "PUSH", mint), ("merge", "MERGE", violet), ("ci", "FAILURE", coral), ("comment", "COMMENTS", amber)] {
             guard soundFilter == "all" || soundFilter == event else { continue }
             let group = NSStackView(); group.orientation = .vertical; group.alignment = .leading; group.spacing = 8
             group.widthAnchor.constraint(equalToConstant: 336).isActive = true
@@ -536,8 +549,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             scroll.widthAnchor.constraint(equalToConstant: 336).isActive = true
             scroll.heightAnchor.constraint(equalToConstant: 250).isActive = true
             group.addArrangedSubview(scroll)
-            padGrid.addArrangedSubview(group)
+            padGrid.addView(group, in: .leading)
         }
+        let columns = soundFilter == "all" ? 4 : 1
+        padGrid.frame = NSRect(x: 0, y: 0, width: max(1024, columns * 336 + (columns - 1) * 8), height: 276)
+        libraryScroll.contentView.scroll(to: .zero)
+        libraryScroll.reflectScrolledClipView(libraryScroll.contentView)
     }
 
     private func readObject(_ name: String) -> [String: Any] {
@@ -568,7 +585,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             scopeStatus.stringValue = "\(repositories!.count) REPOS  /  \(organizations.count) ORGS" +
                 (organizations.isEmpty ? "" : "  ·  " + organizations.joined(separator: ", "))
         }
-        let defaults = ["push": "stackaholics", "merge": "branch-outta-here", "ci": "lego-break-apart"]
+        let defaults = ["push": "stackaholics", "merge": "branch-outta-here", "ci": "lego-break-apart", "comment": "aol-youve-got-mail"]
         for (event, _) in events {
             switches[event]?.state = (config[event + "_enabled"] as? Bool ?? true) ? .on : .off
             let selected = config[event + "_tag"] as? String ?? defaults[event]!
@@ -784,6 +801,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }
     }
 
+    @objc private func showCommentSettings() {
+        let alert = NSAlert()
+        alert.messageText = "PR comment sounds"
+        alert.informativeText = "Play a sound when another person comments on your PR. Your own comments and bot comments stay silent. Choices save when changed."
+        alert.addButton(withTitle: "Done")
+        let controls = NSStackView(views: [eventToggle("comment", title: "ENABLED", color: amber),
+                                          eventPopup("comment", width: 350), cueButton("comment", color: amber)])
+        controls.spacing = 12
+        controls.frame = NSRect(x: 0, y: 0, width: 610, height: 40)
+        alert.accessoryView = controls
+        refreshSettings()
+        alert.beginSheetModal(for: window)
+    }
+
     @objc private func enableSetup() {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let parent = Bundle.main.bundleURL.deletingLastPathComponent().standardizedFileURL
@@ -799,8 +830,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         guard confirm("Enable automatic sounds?", "This adds a source line to .zshrc and installs a background watcher for your own GitHub PRs. Open a new terminal afterward.") else { return }
         var selected = ["configure"]
         for (event, _) in events {
-            guard let tag = popups[event]?.selectedItem?.representedObject as? String else { return }
-            selected += ["--" + event + "-tag", tag, "--" + event, switches[event]?.state == .on ? "on" : "off"]
+            let config = readObject("config.json")
+            let defaults = ["push": "stackaholics", "merge": "branch-outta-here", "ci": "lego-break-apart", "comment": "aol-youve-got-mail"]
+            let tag = popups[event]?.selectedItem?.representedObject as? String ?? config[event + "_tag"] as? String ?? defaults[event]!
+            let enabled = switches[event].map { $0.state == .on } ?? (config[event + "_enabled"] as? Bool ?? true)
+            selected += ["--" + event + "-tag", tag, "--" + event, enabled ? "on" : "off"]
         }
         invoke("push_tags.py", ["doctor"]) { [weak self] success in
             guard let self = self, success else { return }

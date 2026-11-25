@@ -286,3 +286,22 @@ A real authenticated event-check trace used the healthy organization listener. I
 The local build passed. Its bundled runtime files match the final source. The tagline fits under the app name. Version 0.2.1, build 13 retains the ad-hoc Apple Silicon preview format. No autostart service or shared team relay was added. The optional live helper must remain running.
 
 INSTALL.md and TEAM_README.md now cover own-account sign-in, access checks, repository selection, enablement, testing, live permissions, reconnect, and terminal/reboot limits. A complete ASD-STE100 dictionary check was not performed.
+
+## Version 0.3.0: PR comment sounds
+
+Decided by: person (Max). Add sounds for other people's comments on the member's own PRs. Exclude bots and the member's own comments. Add AOL mail and GTA Mission Failed clips.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 9010 | 301 |
+| Test net LOC | 288 | 308 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 3 | 3 |
+
+The first gate counted untracked WAV data as text. The final gate identified the staged audio as binary. The production count includes one new Python module and two WAV files.
+
+Reuse, LOC, and path reviewers reported no actionable findings. Parent inspection found repeated reads for old comments and one failed item that stopped valid items. Both were corrected before review. The tests cover old records, deleted records, partial failures, own comments, bots, authorship, and live/poll deduplication. The notification fallback can combine or miss comments; INSTALL.md states this limit. The previous app's manifest validator accepts the new sound library.
+
+Focused checks: 88 connection, routing, CI, and comment tests passed. Receiver and sound library checks passed. The listener checks passed. The native Apple Silicon preview build passed. No full test suite was run. A complete ASD-STE100 dictionary check was not performed.

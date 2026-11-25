@@ -105,7 +105,7 @@ def run_locked(target, port):
                 time.sleep(0.1)
         print(f'Listening for your merges and CI failures as {login}. Keep this process running.', flush=True)
         # The URL prevents the extension from printing private event payloads.
-        forward = subprocess.Popen(['gh', 'webhook', 'forward', target, '--events=pull_request,workflow_run',
+        forward = subprocess.Popen(['gh', 'webhook', 'forward', target, '--events=pull_request,workflow_run,issue_comment,pull_request_review_comment,pull_request_review',
                                     f'--url=http://127.0.0.1:{port}/webhook', '--secret', secret],
                                    env=env, stdout=subprocess.DEVNULL)
         saved = False

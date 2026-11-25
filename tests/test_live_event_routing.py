@@ -16,6 +16,9 @@ import webhook_receiver as receiver
 
 class LiveEventRoutingTests(unittest.TestCase):
     def setUp(self):
+        comment = patch('comment_events.poll')
+        comment.start()
+        self.addCleanup(comment.stop)
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         environment = patch.dict(os.environ, {'PUSH_TAGS_STATE_DIR': temporary.name})
@@ -127,6 +130,26 @@ class LiveEventRoutingTests(unittest.TestCase):
                 status.assert_called_once_with()
                 merge.assert_called_once_with(**({'live': self.target} if expected_merge else {}))
                 checks.assert_called_once_with(**({'live': self.target} if expected_ci else {}))
+
+    def test_comment_coverage_is_event_specific(self):
+        import comment_events
+        events = ['pull_request', 'issue_comment']
+        with patch.object(preferences, 'listener_status', return_value=dict(self.live, events=events)), \
+                patch.object(app, 'poll'), patch.object(ci, 'poll'), \
+                patch.object(comment_events, 'poll') as comments, patch('sound_library.sync'):
+            app.poll_all()
+        comments.assert_called_once_with(live={
+            'issue_comment': self.target, 'pull_request_review_comment': None,
+            'pull_request_review': None})
+
+    def test_incomplete_comment_catchup_preserves_recovery(self):
+        import comment_events
+        self.recovery_marker()
+        with patch.object(preferences, 'listener_status', return_value=self.live), \
+                patch.object(app, 'poll', return_value=True), patch.object(ci, 'poll', return_value=True), \
+                patch.object(comment_events, 'poll', return_value=False), patch('sound_library.sync'):
+            app.poll_all()
+        self.assertTrue((app.state_dir() / 'webhook-recovery.json').exists())
 
     def test_disconnected_listener_uses_existing_polling_calls(self):
         with patch.object(preferences, 'listener_status', return_value=dict(self.live, connected=False)), \

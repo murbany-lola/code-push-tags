@@ -21,6 +21,9 @@ def handle_event(event, payload, now=None):
     if event == 'workflow_run':
         import ci_events
         return ci_events.handle_event(payload, now)
+    import comment_events
+    if event in comment_events.EVENTS:
+        return comment_events.handle_event(event, payload, now)
     pr = payload.get('pull_request')
     if (event != 'pull_request' or payload.get('action') != 'closed'
             or not isinstance(pr, dict) or pr.get('merged') is not True):
@@ -131,6 +134,9 @@ def main():
     if not (app.state_dir() / 'ci.json').exists():
         import ci_events
         ci_events.poll()
+    if not (app.state_dir() / 'comments.json').exists():
+        import comment_events
+        comment_events.poll()
     with HTTPServer(('127.0.0.1', args.port), Handler) as server:
         server.webhook_secret = secret.encode()
         print(f'Webhook test receiver: http://127.0.0.1:{server.server_port}/webhook', flush=True)

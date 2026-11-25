@@ -14,6 +14,10 @@ Each event can use any listed clip. Preview and select clips locally in the app.
 | `metal-gear-alert` | Metal Gear Solid Alert (1.57 s) | [Downloaded audio](https://www.myinstants.com/media/sounds/tindeck_1.mp3) |
 | `windows-xp-error` | Windows XP Error sound (download) (1.02 s) | [Downloaded audio](https://www.myinstants.com/media/sounds/erro_5kzwjlL.mp3) |
 | `fahhh` | Fahhh (2.28 s) | [Myinstants](https://www.myinstants.com/en/instant/fahhh-42300/) |
+| `aol-youve-got-mail` | You've got mail — AOL recording (1.045 s) | [Myinstants](https://www.myinstants.com/en/instant/youve-got-mail/) · [Downloaded audio](https://www.myinstants.com/media/sounds/yougotmail.mp3) |
+| `gta-mission-failed` | GTA V mission failed — first 4.000 s, with a 0.2 s end fade | [Voicemod Tuna](https://tuna.voicemod.net/sound/2c033143-ad5c-41de-9794-ef9f6954d044) · [Downloaded audio](https://content-storage.voicemod.net/794ea110da830fe4227f4ddadf295da0918ed9da1919c044bdafd5286a7aee7d) |
+
+The GTA V source page identifies the clip as "GTA V Mission Failed". This identity comes from the community upload. It has not been checked against a recording from the game. The full source is 6.269 s. The distributed clip uses the first 4 s.
 
 The downloaded recordings are community uploads. They were converted from MP3 to PCM WAV. Conversion does not improve the source quality. This repository grants no rights to third-party recordings or voices.
 
@@ -25,7 +29,7 @@ Sound IDs and file names remain stable so existing selections continue to work. 
 
 ## Use-case groups
 
-The `use_cases` array in each manifest entry controls the pad browser groups: `push`, `merge`, and `ci`. A clip can appear in more than one group. The All view includes every clip.
+The `use_cases` array in each manifest entry controls the pad browser groups: `push`, `merge`, `ci`, and `comment`. A clip can appear in more than one group. The All view includes every clip.
 
 These groups help people browse. They do not restrict an explicit event selection. The existing `event` field controls random-selection eligibility.
 
@@ -42,8 +46,8 @@ To publish a sound:
 1. Add a PCM WAV file at `audio/<name>.wav`.
 2. Add an entry to `manifest.json`.
 3. Give the entry a unique `id`, display `text`, and matching `file` path.
-4. Set `event` to `any`, `push`, `merge`, or `ci`.
-5. Set `use_cases` to the applicable categories: `push`, `merge`, or `ci`.
+4. Set `event` to `any`, `push`, `merge`, `ci`, or `comment`.
+5. Set `use_cases` to the applicable categories: `push`, `merge`, `ci`, or `comment`.
 6. Add the source to this document.
 7. Merge the audio and manifest changes to `main`.
 
@@ -52,3 +56,5 @@ Keep existing IDs stable so saved sound selections continue to work. A new WAV f
 Double-click a library item to preview it. A single click does not play audio or highlight the item. The CUE buttons still play on one click.
 
 Max requested removal of the original Wheezy clip. The removal is on `main`. `branch-outta-here` remains.
+
+The shared manifest keeps `push`, `merge`, and `ci` in `use_cases` for older app versions. Newer categories use `additional_use_cases`. The mail clip includes `comment` there, so older apps can still receive all new audio.

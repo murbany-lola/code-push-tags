@@ -37,6 +37,9 @@ def validate_manifest(value):
         if cases is not None and (not isinstance(cases, list)
                                   or any(item not in ('push', 'merge', 'ci') for item in cases)):
             raise ValueError('The sound manifest has an invalid category.')
+        extra = tag.get('additional_use_cases')
+        if extra is not None and (not isinstance(extra, list) or any(not isinstance(item, str) for item in extra)):
+            raise ValueError('The sound manifest has an invalid additional category.')
         ids.add(tag['id'])
     return value
 

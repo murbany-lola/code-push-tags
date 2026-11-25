@@ -27,7 +27,7 @@ class ConnectionStatusTests(unittest.TestCase):
         ]
 
     def report(self, target='--org=team', events=None, connected=True):
-        listener = {'target': target, 'events': events if events is not None else ['pull_request', 'workflow_run'],
+        listener = {'target': target, 'events': events if events is not None else ['pull_request', 'workflow_run', 'issue_comment', 'pull_request_review_comment', 'pull_request_review'],
                     'connected': connected, 'reason': 'Listener verified.'}
         with patch.object(preferences, 'repositories', return_value=self.catalogue), \
                 patch.object(preferences, 'listener_status', return_value=listener):
@@ -38,6 +38,7 @@ class ConnectionStatusTests(unittest.TestCase):
         result = self.report()
         self.assertEqual(result['team/one']['connection'], 'live')
         self.assertTrue(result['team/two']['ci_live'])
+        self.assertTrue(result['team/two']['comment_live'])
         self.assertEqual(result['person/project']['connection'], 'polling')
         self.assertEqual(result['person/project']['access'], 'confirmed')
 

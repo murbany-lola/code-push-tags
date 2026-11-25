@@ -172,3 +172,13 @@ Select **Download update** when ready. The app opens the download after that cli
 Use **Restart UI** in the app menu to restart the window. The installed background watcher remains registered. Saved choices remain in place.
 
 Decided by: person (Max). Add a general logo and a quiet update notice. Keep background processing separate from UI restarts.
+
+## PR comment sounds
+
+Version 0.3.0 adds a sound for comments on PRs that you created. Only comments from other people produce sounds. Your own comments and bot comments stay silent. Text comments in reviews are included.
+
+Select **COMMENTS…** to turn this sound on or off and select a clip. The default is AOL **You've got mail**. Select **COMMENTS** in the library to find the clip. Double-click a card to preview it. Global mute also stops comment sounds.
+
+A live listener receives new comments immediately. Restart an older source listener to subscribe to the new comment events. Without a live listener, the watcher checks GitHub notifications. GitHub can combine several comments into one notification. This fallback can miss comments if you do not receive a notification for the PR. It does not mark notifications as read. Initial setup does not play old comments.
+
+GitHub notification polling requires a classic token with `repo` or `notifications` access. The GitHub notifications API does not support fine-grained tokens.
