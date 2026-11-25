@@ -8,3 +8,5 @@ custom-tags/
 audio/*.wav
 !audio/stackaholics.wav
 build_tags.py
+!audio/stackaholics-welcome-to-main.wav
+!audio/stackaholics-thats-a-wrap.wav

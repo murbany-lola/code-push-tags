@@ -20,3 +20,18 @@ The before values are from the initial review gate. The after values are from th
 Validation: 21 unit tests passed. Shell syntax checks passed in the implementation review. The approved clip is a 3.24-second PCM WAV file. Max approved its sound.
 
 Limits: no real push or merge was made for testing. Merge detection can be delayed by GitHub. The documentation uses short, direct instructions; a complete ASD-STE100 dictionary check was not performed.
+
+## Saved merge clips
+
+Two approved WAV files were added through the existing manifest. The active settings were not changed.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 14 | 14 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 2 | 2 |
+
+reuse-hunter: pass; no findings. The manifest IDs are unique. All three WAV files decode. The CLI lists all three tags. The runtime code was not changed.

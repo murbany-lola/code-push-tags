@@ -10,6 +10,17 @@ The pilot clip says: **Stackaholics! We build different!** Max approved this cli
 afplay audio/stackaholics.wav
 ```
 
+## Saved merge tags
+
+Both merge clips are included. Select one when you want to change the merge sound:
+
+```sh
+python3 push_tags.py configure --merge-tag stackaholics-welcome-to-main
+python3 push_tags.py configure --merge-tag stackaholics-thats-a-wrap
+```
+
+The push sound has its own setting. Adding these files does not change an existing selection.
+
 ## Requirements
 
 Use macOS, zsh, Python 3.9 or later, Git, and GitHub CLI (`gh`). The installation folder must remain at the same path after installation.

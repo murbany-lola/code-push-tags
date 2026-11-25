@@ -6,6 +6,18 @@
       "text": "Stackaholics! We build different!",
       "file": "audio/stackaholics.wav",
       "event": "any"
+    },
+    {
+      "id": "stackaholics-welcome-to-main",
+      "text": "Stackaholics! Welcome to main!",
+      "file": "audio/stackaholics-welcome-to-main.wav",
+      "event": "merge"
+    },
+    {
+      "id": "stackaholics-thats-a-wrap",
+      "text": "Stackaholics! That's a wrap!",
+      "file": "audio/stackaholics-thats-a-wrap.wav",
+      "event": "merge"
     }
   ]
 }
