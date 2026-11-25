@@ -41,18 +41,46 @@ The current public preview has an ad-hoc signature. It is not Developer ID signe
 
 Read [Apple's instructions for opening an app from an unidentified developer](https://support.apple.com/en-us/102445). Check the source of the download before you approve an exception. A managed Mac can have additional restrictions.
 
-## Sign in and choose
+## Listen to your repositories
+
+Use your own GitHub account. You do not need an invitation to this app's public repository. You do need access to each work repository you select.
 
 1. Select **GitHub Sign-in**.
 2. Complete sign-in in Terminal with your own account.
 3. Select **Check setup**.
 4. Select **Repositories / Orgs**.
-5. Select the repositories or organizations you want.
-6. Select **Save selection**.
+5. Select **Refresh** to check your current GitHub access.
+6. Clear **All accessible repositories** if you want a smaller selection.
+7. Select the repositories or organizations you want.
+8. Select **Save selection**.
+9. Choose your push, merge, and failure sounds from the event menus.
+10. Select **Enable on this Mac**.
+11. Review the setup prompt.
+12. Confirm setup when ready.
+13. Open a new terminal window.
 
-The app confirms access before it saves your selection. An organization selection includes only repositories your account can access. Selecting a repository does not grant additional GitHub permissions.
+To check the GitHub account in Terminal, run:
+
+```sh
+gh auth status
+```
+
+The app confirms access before it saves your selection. An organization selection includes only repositories your account can access. Selecting a repository does not grant GitHub permissions. If a private repository is missing, check your account and your organization's single sign-on (SSO) requirements.
+
+Merge sounds cover PRs you authored or merged. CI sounds cover failures associated with your work. Selecting an organization does not enable sounds for everyone's unrelated activity. Max's local listener does not send sounds to your Mac.
 
 Select **DJ DECKS** or **BOOMBOX** to change the layout. The app saves this choice on your Mac.
+
+## Check your setup
+
+1. Confirm that your test repository is selected in **Repositories / Orgs**.
+2. Turn global mute off.
+3. Push a normal commit from the new terminal, or merge one of your normal PRs on GitHub.
+4. Keep the Mac awake and online until the event arrives.
+
+GitHub web and squash merges are included. A terminal push must use the installed zsh function. Other shells, GUI Git clients, and direct `/usr/bin/git` calls bypass the push trigger.
+
+The first background check sets a baseline. It does not play old events. Use a new event after setup for this check. You can work in another app while the sound plays.
 
 ## Choose sounds
 
@@ -64,20 +92,22 @@ The library has Push, Merge, and Failure groups. A sound can appear in more than
 - Use each event's menu to save its sound assignment.
 - A new preview stops the previous preview.
 
-## Enable automatic sounds
+## How events arrive
 
-1. Select **Enable on this Mac**.
-2. Review the setup prompt.
-3. Confirm setup when ready.
-4. Open a new terminal window.
+Enablement adds a source line to `.zshrc` and installs a background watcher. The new terminal loads the push trigger. Normal setup does not create GitHub webhooks or change CI workflows.
 
-Setup adds a source line to `.zshrc` and installs a background watcher. The new terminal loads the push trigger. The app does not change your repository hooks or CI workflows.
+| Repository status | Event path |
+| --- | --- |
+| **Live** | A verified listener on this Mac receives merge and CI events. Covered events do not use repository event polling. |
+| **Live + polling** | The listener covers one event type. Polling supplies the other type. |
+| **Polling available** | No verified listener covers the repository. The enabled watcher checks once per minute. |
+| **Access not confirmed** | Refresh the list or check GitHub sign-in before saving. |
 
-GitHub merges and CI checks use polling once per minute. A verified listener already connected to your Mac can supply live events. The app does not create a listener during normal setup. GitHub indexing and delivery can add delay. Keep your Mac awake and online for event checks.
+The app checks connection health. If the live connection is unavailable, polling supplies the fallback. After a recorded disconnect, a catch-up check covers the gap. GitHub indexing and event delivery can add delay. Polling can take a minute or longer to detect an event.
 
-Push sounds follow successful Git commands that use the installed zsh function. Other shells, GUI Git clients, and direct `/usr/bin/git` calls bypass that trigger. For noninteractive zsh setup, see the [terminal guide](TEAM_README.md).
+Keep your Mac awake and online for event checks. Notifications do not need the sound app in front. Closing the window or quitting the app does not stop an installed background watcher.
 
-You can work in another app while event sounds play. Notifications do not need the sound app in front. Closing the window or quitting the app does not stop an installed background watcher.
+For an optional live connection to a repository you administer, see [live listener setup](TEAM_README.md#optional-live-listener). The DMG does not include that source-only helper. Standard polling needs no webhook administration access.
 
 ## Mute at any time
 

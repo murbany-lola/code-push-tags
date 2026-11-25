@@ -395,7 +395,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         ])
         let wordmark = NSTextField(labelWithString: "PUSH TAGS")
         wordmark.font = .systemFont(ofSize: 27, weight: .heavy); wordmark.textColor = .white
-        let brand = NSStackView(views: [wordmark, label("YOUR PERSONAL CODE DJ", size: 9)])
+        let brand = NSStackView(views: [wordmark, label("Millennial in the streets, Gen Z in the commits.", size: 9)])
         brand.orientation = .vertical; brand.alignment = .leading; brand.spacing = 3
         let space = NSView(); space.setContentHuggingPriority(.defaultLow, for: .horizontal)
         previewStatus.font = .monospacedSystemFont(ofSize: 10, weight: .medium)

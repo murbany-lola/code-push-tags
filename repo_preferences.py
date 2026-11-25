@@ -152,23 +152,21 @@ def connections():
         if name.casefold() not in found:
             found[name.casefold()] = {'full_name': name, 'private': False, 'organization': False,
                                       'access': 'unconfirmed'}
-    flag, _, target = (live.get('target') or '').partition('=')
-    events = live['events']
+    merge_target = app.live_target(live, 'pull_request')
+    ci_target = app.live_target(live, 'workflow_run')
     for key, repo in found.items():
-        covered = live['connected'] and (key == target.casefold() if flag == '--repo'
-                                         else key.split('/')[0] == target.casefold())
         confirmed = repo['access'] == 'confirmed'
-        repo['merge_live'] = bool(confirmed and covered and ('pull_request' in events or '*' in events))
-        repo['ci_live'] = bool(confirmed and covered and ('workflow_run' in events or '*' in events))
+        repo['merge_live'] = bool(confirmed and app.live_covers(key, merge_target))
+        repo['ci_live'] = bool(confirmed and app.live_covers(key, ci_target))
         if not confirmed:
             repo.update(connection='unconfirmed', reason='Repository access could not be confirmed. Refresh or check GitHub sign-in.')
         elif repo['merge_live'] and repo['ci_live']:
-            repo.update(connection='live', reason='Live merge and CI events; polling remains available.')
+            repo.update(connection='live', reason='Live merge and CI events. Polling resumes if the connection stops.')
         elif repo['merge_live'] or repo['ci_live']:
             event = 'merge' if repo['merge_live'] else 'CI'
             repo.update(connection='partial', reason=f'Live {event} events; other events use polling.')
         else:
-            reason = live['reason'] if covered or not live['connected'] else 'No connected listener covers this repository.'
+            reason = live['reason'] if not live['connected'] else 'No connected listener covers this repository.'
             repo.update(connection='polling', reason=reason + ' Polling checks run every 60 seconds when setup is enabled.')
     return {'repositories': sorted(found.values(), key=lambda repo: repo['full_name'].casefold()),
             'checked_at': app.stamp(dt.datetime.now(app.UTC)), 'listener': live}

@@ -22,7 +22,7 @@ class CIFailureTests(unittest.TestCase):
         self.environment = patch.dict(os.environ, {'PUSH_TAGS_STATE_DIR': self.temp.name})
         self.environment.start()
         self.addCleanup(self.environment.stop)
-        self.scope = SimpleNamespace(allowed=Mock(return_value=True))
+        self.scope = SimpleNamespace(allowed=Mock(return_value=True), listener_status=Mock(return_value={}))
         self.preferences = patch.dict(sys.modules, {'repo_preferences': self.scope})
         self.preferences.start()
         self.addCleanup(self.preferences.stop)

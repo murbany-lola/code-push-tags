@@ -2,7 +2,7 @@
 
 ## Current state
 
-Version 0.2.0 is the new public preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
+Version 0.2.1 is the new public preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
 
 Decided by: person (Max). Test locally before sharing. Keep the repository in his personal GitHub account and make it public for downloads.
 
@@ -112,3 +112,13 @@ The notice stays inside the app. It does not open a popup, take focus, or stop s
 Install version 0.2.0 manually once on Macs that still run version 0.1.0. Earlier versions cannot show the new notice. Audio-library updates remain separate from app-code updates.
 
 Decided by: person (Max). Use a quiet update notice and preserve the background watcher during UI restarts. Apple Developer signing and notarization remain deferred at Max's request.
+
+## Version 0.2.1
+
+The app header and README use the tagline "Millennial in the streets, Gen Z in the commits."
+
+Healthy connected repositories use webhook events. Scheduled checks exclude those repositories from merge and CI detail reads. Uncovered repositories and event types continue to use polling. The account activity feed remains global, but covered entries do not cause repository-specific reads.
+
+The optional source listener reconnects after a connected-session drop. A recorded gap causes a recovery check. Recovery remains pending when a check fails, the merge lock is busy, or GitHub's account-feed interval has not elapsed.
+
+See INSTALL.md for repository selection and TEAM_README.md for optional live setup. The source listener still requires a running terminal and does not start automatically after a reboot.

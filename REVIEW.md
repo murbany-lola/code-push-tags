@@ -259,3 +259,30 @@ The DMG mounted read-only. It contained version 0.2.0, build 10, the update help
 The logo came from the built-in image generation tool. The exact prompt is in docs/logo-prompt.md. The current public preview is not Developer ID signed or notarized. Version 0.1.0 users must install this update once before they can receive future app-update notices.
 
 The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.
+
+## Tagline and live-event recovery
+
+Decided by: person (Max). Add "Millennial in the streets, Gen Z in the commits." under the app name and in the README. Prefer live events over polling for connected repositories. Add clear instructions for each person's repositories.
+
+A reported delay occurred after the live test forwarder exited on WebSocket close 1006 with unexpected EOF. Polling remained healthy. The next recorded checkpoint was 42 seconds after the reported merge. The live source process was restored. Real GitHub deliveries returned HTTP 200.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 65 | 80 |
+| Test net LOC | 358 | 431 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 0 | 0 |
+
+- path-correctness: P2; failed hook cleanup masked the disconnect error and stopped retry. Applied: preserve the active error and saved identity. Retry later startup errors after a known connection loss. First startup errors still stop the helper. Round 2 passed.
+
+Focused checks passed: 21 push tests, 33 CI tests, 12 repository preference tests, and 14 connection tests. The final live-routing module has 18 passing cases. Listener checks passed before the cleanup change; five focused cleanup/startup checks then passed. All tests simulate retry delays and provider intervals.
+
+Two incomplete-recovery failures were reproduced before their fixes. A busy merge lock and a deferred account feed each cleared recovery too soon. The merge check now reports incomplete work. Recovery remains pending until the same target is healthy, both checks complete, and the marker ID still matches under its short lock. A later disconnect cannot be removed by an earlier catch-up.
+
+A real authenticated event-check trace used the healthy organization listener. It made zero organization repository-specific reads and excluded that organization from search queries. GitHub's account activity feed remains global for uncovered work; covered entries do not cause PR or workflow reads. A controlled source-process restart recorded a gap. The scheduled watcher completed recovery and removed that marker after the connection returned.
+
+The local build passed. Its bundled runtime files match the final source. The tagline fits under the app name. Version 0.2.1, build 13 retains the ad-hoc Apple Silicon preview format. No autostart service or shared team relay was added. The optional live helper must remain running.
+
+INSTALL.md and TEAM_README.md now cover own-account sign-in, access checks, repository selection, enablement, testing, live permissions, reconnect, and terminal/reboot limits. A complete ASD-STE100 dictionary check was not performed.

@@ -146,19 +146,41 @@ def gh_events(login, page, env):
     return json.loads(body), interval
 
 
-def search_merges(login, since, env, state=None, now=None):
+def live_target(status, event):
+    if not status.get('connected') or not ({event, '*'} & set(status.get('events', []))):
+        return None
+    flag, separator, name = (status.get('target') or '').partition('=')
+    if separator and name and flag in ('--org', '--repo'):
+        return flag[2:], name.casefold()
+    return None
+
+
+def live_covers(repo, target):
+    if not target:
+        return False
+    kind, name = target
+    repo = repo.casefold()
+    return repo == name if kind == 'repo' else repo.split('/')[0] == name
+
+
+def search_merges(login, since, env, state=None, now=None, live=None):
     found = {}
     for qualifier in ('author', 'involves'):
         page = 1
         while True:
             query = f'is:pr is:merged {qualifier}:{login} merged:>={stamp(since)}'
+            if live:
+                query += f' -{live[0]}:{live[1]}'
             data = gh_json(['api', '--method', 'GET', 'search/issues', '-f', f'q={query}',
                             '-f', 'sort=updated', '-f', 'order=asc', '-f', 'per_page=100', '-f', f'page={page}'], env)
             if data.get('incomplete_results') or data.get('total_count', 0) > 1000:
                 raise RuntimeError('GitHub search is incomplete. The checkpoint was not changed.')
             items = data['items']
             for item in items:
-                found[item['pull_request']['url']] = item
+                url = item['pull_request']['url']
+                repo = url.removeprefix('https://api.github.com/repos/').split('/pulls/', 1)[0]
+                if not live_covers(repo, live):
+                    found[url] = item
             if len(items) < 100:
                 break
             page += 1
@@ -183,20 +205,23 @@ def search_merges(login, since, env, state=None, now=None):
             pr = payload.get('pull_request', {})
             if (event.get('type') == 'PullRequestEvent' and payload.get('action') in ('closed', 'merged')
                     and pr.get('id') is not None and pr.get('url')):
-                found[pr['url']] = {'pull_request': {'url': pr['url']}}
+                # The account feed cannot filter repositories. Skip covered PR detail reads.
+                repo = pr['url'].removeprefix('https://api.github.com/repos/').split('/pulls/', 1)[0]
+                if not live_covers(repo, live):
+                    found[pr['url']] = {'pull_request': {'url': pr['url']}}
         if len(events) < 100:
             break
     return found
 
 
-def poll(now=None):
+def poll(now=None, live=None):
     now = now or dt.datetime.now(UTC)
     directory = state_dir()
     with (directory / 'poll.lock').open('a') as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            return
+            return False
         if not config().get('merge_enabled', True):
             return
         env = gh_env()
@@ -210,13 +235,18 @@ def poll(now=None):
             raise RuntimeError('GitHub account changed. Remove merges.json to start a new baseline.')
         start = parse_stamp(state['started_at'])
         since = max(start, parse_stamp(state['checkpoint']) - dt.timedelta(days=1))
-        matches = search_merges(login, since, env, state, now)
+        feed_due = not state.get('events_next_at') or now >= parse_stamp(state['events_next_at'])
+        matches = (search_merges(login, since, env, state, now, live=live) if live
+                   else search_merges(login, since, env, state, now))
         seen = dict(state['seen'])
         events = []
         for identity, item in matches.items():
             if identity in seen:
                 continue
             api_url = item['pull_request']['url']
+            repo = api_url.removeprefix('https://api.github.com/repos/').split('/pulls/', 1)[0]
+            if live_covers(repo, live):
+                continue
             # Search metadata can be delayed. The pull request response confirms the merge.
             detail = gh_json(['api', api_url], env)
             merged_at = detail.get('merged_at')
@@ -239,6 +269,8 @@ def poll(now=None):
             repo = identity.removeprefix('https://api.github.com/repos/').split('/pulls/', 1)[0]
             if repo_preferences.allowed(repo):
                 notify('merge')
+        if not feed_due:
+            return False
 
 
 def doctor():
@@ -259,16 +291,31 @@ def doctor():
 
 def poll_all():
     import ci_events
+    import repo_preferences
+    connection = repo_preferences.listener_status()
+    recovery_path = state_dir() / 'webhook-recovery.json'
+    recovery = read_json(recovery_path, {})
+    recovering = (recovery.get('id') and (recovery.get('target') or '').casefold()
+                  == (connection.get('target') or '').casefold())
     failures = []
-    for check in (poll, ci_events.poll):
+    complete = True
+    for check, event in ((poll, 'pull_request'), (ci_events.poll, 'workflow_run')):
+        target = None if recovering else live_target(connection, event)
         try:
-            check()
+            result = check(live=target) if target else check()
+            if result is False:
+                complete = False
         except (OSError, ValueError, RuntimeError, KeyError) as error:
             failures.append(error)
     import sound_library
     sound_library.sync()
     if failures:
         raise RuntimeError('One or more GitHub event checks failed. Check authentication and network access.')
+    if complete and recovering and connection.get('connected'):
+        with (state_dir() / 'webhook-recovery.lock').open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            if read_json(recovery_path, {}).get('id') == recovery['id']:
+                recovery_path.unlink(missing_ok=True)
 
 
 def main():

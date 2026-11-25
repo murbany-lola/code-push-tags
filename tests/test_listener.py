@@ -156,11 +156,155 @@ class ListenerTests(unittest.TestCase):
                                                             [{'name': 'cli', 'id': 19}]]), \
                 patch.object(listen.subprocess, 'Popen', side_effect=[receiver, forward]), \
                 patch.object(listen.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0)) as command:
-            with self.assertRaisesRegex(RuntimeError, 'forwarding stopped'):
-                listen.run('--repo=coder/project')
+            with self.assertRaisesRegex(listen.ForwarderDisconnected, 'forwarding stopped'):
+                listen.run_locked('--repo=coder/project', 18769)
         self.assertEqual(command.call_args.args[0],
                          ['gh', 'api', '--include', '--method', 'DELETE', 'repos/coder/project/hooks/19'])
         self.assertFalse((self.state / 'webhook-pilot.json').exists())
+
+    def test_connected_forwarder_retries_after_cleanup_without_a_real_wait(self):
+        target = '--org=example'
+        with patch.object(listen, 'run_locked', side_effect=[listen.ForwarderDisconnected('disconnected'), 0]) as start, \
+                patch.object(listen.time, 'sleep') as wait, \
+                contextlib.redirect_stderr(io.StringIO()) as messages:
+            self.assertEqual(listen.run(target), 0)
+        self.assertEqual(start.call_args_list, [unittest.mock.call(target, 18769), unittest.mock.call(target, 18769)])
+        wait.assert_called_once_with(5)
+        self.assertIn('polling continues', messages.getvalue())
+
+    def test_cleanup_failure_preserves_disconnect_and_recovery_marker(self):
+        self.run_patches()
+        target = '--repo=coder/project'
+        receiver = MagicMock()
+        receiver.poll.return_value = None
+        forward = MagicMock()
+        forward.poll.side_effect = [None, 4, 4]
+        forward.returncode = 4
+        original_run = listen.run_locked
+        attempts = []
+
+        def attempt(current_target, port):
+            attempts.append(current_target)
+            if len(attempts) == 1:
+                return original_run(current_target, port)
+            self.assertEqual(listen.app.read_json(self.state / 'webhook-pilot.json', {}),
+                             {'target': target, 'id': 19})
+            self.assertEqual(listen.app.read_json(self.state / 'webhook-recovery.json', {})['target'], target)
+            return 0
+
+        response = subprocess.CompletedProcess([], 1, stdout=b'HTTP/2.0 500 Internal Server Error\r\n\r\n')
+        with patch.object(listen.app, 'gh_json', side_effect=[{'login': 'coder'}, [],
+                                                            [{'name': 'cli', 'id': 19}]]), \
+                patch.object(listen.subprocess, 'Popen', side_effect=[receiver, forward]), \
+                patch.object(listen.subprocess, 'run', return_value=response), \
+                patch.object(listen, 'run_locked', side_effect=attempt), \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(listen.run(target), 0)
+        self.assertEqual(attempts, [target, target])
+
+    def test_retry_startup_failure_after_disconnect_keeps_retrying(self):
+        target = '--org=example'
+        failures = [listen.ForwarderDisconnected('disconnected'), RuntimeError('temporary API failure'), 0]
+        with patch.object(listen, 'run_locked', side_effect=failures) as start, \
+                patch.object(listen.time, 'sleep') as wait, \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(listen.run(target), 0)
+        self.assertEqual(start.call_count, 3)
+        self.assertEqual(wait.call_args_list, [unittest.mock.call(5), unittest.mock.call(5)])
+        self.assertEqual(listen.app.read_json(self.state / 'webhook-recovery.json', {})['target'], target)
+
+    def test_cleanup_failure_does_not_mask_termination(self):
+        self.run_patches()
+        target = '--repo=coder/project'
+        receiver = MagicMock()
+        receiver.poll.return_value = None
+        forward = MagicMock()
+        forward.poll.return_value = None
+        response = subprocess.CompletedProcess([], 1, stdout=b'HTTP/2.0 500 Internal Server Error\r\n\r\n')
+        with patch.object(listen.app, 'gh_json', side_effect=[{'login': 'coder'}, [],
+                                                            [{'name': 'cli', 'id': 19}]]), \
+                patch.object(listen.subprocess, 'Popen', side_effect=[receiver, forward]), \
+                patch.object(listen.subprocess, 'run', return_value=response), \
+                patch.object(listen.time, 'sleep', side_effect=SystemExit(0)), \
+                contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as stopped:
+                listen.run(target)
+        self.assertEqual(stopped.exception.code, 0)
+        self.assertEqual(listen.app.read_json(self.state / 'webhook-pilot.json', {}),
+                         {'target': target, 'id': 19})
+        self.assertFalse((self.state / 'webhook-recovery.json').exists())
+
+    def test_recovery_marker_is_written_before_retry_wait(self):
+        target = '--org=example'
+        marker = {'id': 'a' * 32, 'target': target}
+
+        def check_marker(seconds):
+            self.assertEqual(seconds, 5)
+            self.assertEqual(listen.app.read_json(self.state / 'webhook-recovery.json', {}), marker)
+
+        with patch.object(listen, 'run_locked', side_effect=[listen.ForwarderDisconnected('disconnected'), 0]), \
+                patch.object(listen.uuid, 'uuid4', return_value=MagicMock(hex=marker['id'])), \
+                patch.object(listen.time, 'sleep', side_effect=check_marker), \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(listen.run(target), 0)
+
+    def test_recovery_marker_write_holds_only_the_short_recovery_lock(self):
+        write_json = listen.app.write_json
+
+        def check_write(path, value):
+            with (self.state / 'webhook-recovery.lock').open('a') as lock:
+                with self.assertRaises(BlockingIOError):
+                    listen.fcntl.flock(lock, listen.fcntl.LOCK_EX | listen.fcntl.LOCK_NB)
+            write_json(path, value)
+
+        def check_wait(seconds):
+            self.assertEqual(seconds, 5)
+            with (self.state / 'webhook-recovery.lock').open('a') as lock:
+                listen.fcntl.flock(lock, listen.fcntl.LOCK_EX | listen.fcntl.LOCK_NB)
+                listen.fcntl.flock(lock, listen.fcntl.LOCK_UN)
+
+        with patch.object(listen, 'run_locked', side_effect=[listen.ForwarderDisconnected('disconnected'), 0]), \
+                patch.object(listen.app, 'write_json', side_effect=check_write), \
+                patch.object(listen.time, 'sleep', side_effect=check_wait), \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(listen.run('--org=example'), 0)
+
+    def test_recovery_marker_has_a_new_id_for_each_disconnect(self):
+        target = '--repo=coder/project'
+        markers = []
+        identifiers = ['a' * 32, 'b' * 32]
+        failures = [listen.ForwarderDisconnected('first'), listen.ForwarderDisconnected('second'), 0]
+        with patch.object(listen, 'run_locked', side_effect=failures), \
+                patch.object(listen.uuid, 'uuid4', side_effect=[MagicMock(hex=value) for value in identifiers]), \
+                patch.object(listen.time, 'sleep', side_effect=lambda _: markers.append(
+                    listen.app.read_json(self.state / 'webhook-recovery.json', {}))), \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(listen.run(target), 0)
+        self.assertEqual(markers, [{'id': value, 'target': target} for value in identifiers])
+
+    def test_retry_wait_keeps_listener_lock(self):
+        target = '--org=example'
+
+        def check_lock(seconds):
+            self.assertEqual(seconds, 5)
+            with (self.state / 'listener.lock').open('a') as lock:
+                with self.assertRaises(BlockingIOError):
+                    listen.fcntl.flock(lock, listen.fcntl.LOCK_EX | listen.fcntl.LOCK_NB)
+
+        with patch.object(listen, 'run_locked', side_effect=[listen.ForwarderDisconnected('disconnected'), 0]), \
+                patch.object(listen.time, 'sleep', side_effect=check_lock), \
+                contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(listen.run(target), 0)
+
+    def test_startup_errors_and_termination_do_not_retry(self):
+        for error in (RuntimeError('startup failed'), KeyboardInterrupt(), SystemExit(0)):
+            with self.subTest(error=type(error).__name__), \
+                    patch.object(listen, 'run_locked', side_effect=error) as start, \
+                    patch.object(listen.time, 'sleep') as wait:
+                with self.assertRaises(type(error)):
+                    listen.run('--org=example')
+                start.assert_called_once()
+                wait.assert_not_called()
 
     def test_receiver_start_failure_does_not_start_forwarding(self):
         self.run_patches()

@@ -163,16 +163,19 @@ def handle_event(payload, now=None):
         return consider(repo, detail, login, env, state, now)
 
 
-def open_heads(login, env):
+def open_heads(login, env, live=None):
     items = []
     page = 1
     while True:
         query = f'is:pr is:open author:{login}'
+        if live:
+            query += f' -{live[0]}:{live[1]}'
         result = app.gh_json(['api', '--method', 'GET', 'search/issues', '-f', f'q={query}',
                               '-f', 'per_page=100', '-f', f'page={page}'], env)
         if result.get('incomplete_results') or result.get('total_count', 0) > 1000:
             raise RuntimeError('GitHub pull request search is incomplete.')
-        items.extend(result['items'])
+        items.extend(item for item in result['items']
+                     if not app.live_covers(item['repository_url'].removeprefix('https://api.github.com/repos/'), live))
         if len(result['items']) < 100:
             break
         page += 1
@@ -223,15 +226,16 @@ def relevant_repositories(heads):
     return repos
 
 
-def poll(now=None):
+def poll(now=None, live=None):
     if not app.config().get('ci_enabled', True):
         return
     now = now or dt.datetime.now(app.UTC)
     with session(now) as (env, login, state, fresh):
         if fresh:
             return
-        heads = open_heads(login, env)
-        repos = relevant_repositories(heads)
+        heads = open_heads(login, env, live=live) if live else open_heads(login, env)
+        heads = {head for head in heads if not app.live_covers(head[0], live)}
+        repos = {repo for repo in relevant_repositories(heads) if not app.live_covers(repo, live)}
         since = max(app.parse_stamp(state['started_at']),
                     app.parse_stamp(state.get('checkpoint', state['started_at'])) - dt.timedelta(days=1))
         with ThreadPoolExecutor(max_workers=4) as workers:

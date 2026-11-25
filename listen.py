@@ -9,8 +9,13 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import uuid
 
 import push_tags as app
+
+
+class ForwarderDisconnected(RuntimeError):
+    pass
 
 
 def webhook_secret(login):
@@ -55,7 +60,23 @@ def run(target, port=18769):
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise RuntimeError('The webhook listener is already running on this Mac.')
-        return run_locked(target, port)
+        reconnecting = False
+        while True:
+            try:
+                return run_locked(target, port)
+            except ForwarderDisconnected:
+                reconnecting = True
+                state = app.state_dir()
+                with (state / 'webhook-recovery.lock').open('a') as recovery_lock:
+                    fcntl.flock(recovery_lock, fcntl.LOCK_EX)
+                    app.write_json(state / 'webhook-recovery.json',
+                                   {'id': uuid.uuid4().hex, 'target': target})
+            except (OSError, RuntimeError):
+                if not reconnecting:
+                    raise
+            print('Live connection lost. Retrying in 5 seconds; polling continues.',
+                  file=sys.stderr, flush=True)
+            time.sleep(5)
 
 
 def run_locked(target, port):
@@ -99,8 +120,12 @@ def run_locked(target, port):
                                    {'target': target, 'id': created[0]['id']})
                     saved = True
             time.sleep(0.25)
-        raise RuntimeError(f'GitHub webhook forwarding stopped (exit {forward.returncode}).')
+        message = f'GitHub webhook forwarding stopped (exit {forward.returncode}).'
+        if saved:
+            raise ForwarderDisconnected(message)
+        raise RuntimeError(message)
     finally:
+        active_error = sys.exc_info()[1]
         for child in (forward, receiver):
             if child is not None and child.poll() is None:
                 child.terminate()
@@ -109,7 +134,13 @@ def run_locked(target, port):
                 except subprocess.TimeoutExpired:
                     child.kill()
                     child.wait()
-        remove_pilot_hook(target, env)
+        try:
+            remove_pilot_hook(target, env)
+        except (OSError, RuntimeError):
+            if active_error is None:
+                raise
+            print('Owned webhook cleanup failed. Its saved identity is retained for the next attempt.',
+                  file=sys.stderr, flush=True)
 
 
 def main():

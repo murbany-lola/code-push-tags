@@ -2,9 +2,9 @@
 
 ## Current state
 
-The source is on `main` in Max's personal repository. Max approved public source and downloads. [Version 0.2.0](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.2.0) is published with a DMG and ZIP.
+The source is on `main` in Max's personal repository. Max approved public source and downloads. [Version 0.2.1](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.2.1) is published with a DMG and ZIP.
 
-The installed local app is `~/Applications/Code Push Tags.app`, version 0.2.0, build 10. It targets Apple Silicon and macOS 12 or later. Intel support and automatic app-code installation are deferred. Shared audio updates and quiet app-version notices are implemented.
+The installed local app is `~/Applications/Code Push Tags.app`, version 0.2.1, build 13. It targets Apple Silicon and macOS 12 or later. Intel support and automatic app-code installation are deferred. Shared audio updates and quiet app-version notices are implemented.
 
 Max remains the pilot user. No coworker invitations or automatic enrollment were performed. People can download the public app and choose whether to enable setup. See [INSTALL.md](INSTALL.md).
 
@@ -26,7 +26,7 @@ Polling and signed webhook deliveries share saved event state. Muted and exclude
 
 ## Connections
 
-Normal setup uses polling once per minute. The app can use an existing verified listener on that Mac. Normal installation does not create a webhook.
+Normal setup uses polling once per minute. A healthy listener supplies covered events without repository-specific polling. Uncovered repositories and event types retain polling. A recorded connection gap receives a catch-up check. Normal installation does not create a webhook.
 
 Max approved a temporary organization test listener for his Mac. The receiver uses `127.0.0.1:18769` through GitHub's authenticated test-forwarding service. The listener subscribes to `pull_request` and `workflow_run`. It does not restart automatically after a Mac reboot. Polling remains the fallback.
 
@@ -79,3 +79,7 @@ See [app controls](MAC_APP.md), [updates](UPDATES.md), and [sound sources](SOUND
 Decided by: person (Max). Add a silly general logo and quiet version notices. Preserve background processing during a UI restart. Defer Apple Developer signing and notarization.
 
 The version 0.2.0 UI restart test changed the UI PID, retained the launchd watcher registration, and preserved hashes of the saved sound, mute, repository, and layout files. The controlled newer-version test used isolated local state. It did not create a real release or open its download URL.
+
+Decided by: person (Max). Put the tagline under the app name and in the README. Prefer live events for connected repositories and give colleagues clear setup instructions.
+
+Decided by: agent. Retry a disconnected live test stream and preserve one recovery check after a gap. Retain pending recovery when event checks are incomplete. Keep normal setup on polling when no local live connection is available.
