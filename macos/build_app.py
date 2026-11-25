@@ -6,10 +6,11 @@ from pathlib import Path
 import plistlib
 import shutil
 import subprocess
+import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ('push_tags.py', 'install.py', 'shell.zsh', 'manifest.json', 'ci_events.py', 'repo_preferences.py')
+RUNTIME = ('push_tags.py', 'install.py', 'shell.zsh', 'manifest.json', 'ci_events.py', 'repo_preferences.py', 'sound_library.py')
 
 
 def build(output):
@@ -38,12 +39,21 @@ def build(output):
         plistlib.dump(info, stream)
     subprocess.run(['xcrun', 'swiftc', '-swift-version', '5', '-O', '-framework', 'AppKit',
                     '-target', 'arm64-apple-macosx12.0',
-                    str(ROOT / 'macos/CodePushTags.swift'), str(ROOT / 'macos/TransportArtwork.swift'), '-o', str(binary)], check=True)
+                    str(ROOT / 'macos/CodePushTags.swift'), str(ROOT / 'macos/TransportArtwork.swift'),
+                    str(ROOT / 'macos/LibraryItem.swift'), '-o', str(binary)], check=True)
     subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True)
     archive = output / 'Code-Push-Tags-macOS.zip'
     subprocess.run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', str(app), str(archive)], check=True)
+    disk_image = output / 'Code-Push-Tags-macOS.dmg'
+    with tempfile.TemporaryDirectory(prefix='dmg-', dir=output) as temporary:
+        staging = Path(temporary)
+        shutil.copytree(app, staging / app.name, symlinks=True)
+        (staging / 'Applications').symlink_to('/Applications', target_is_directory=True)
+        subprocess.run(['hdiutil', 'create', '-volname', 'Code Push Tags', '-srcfolder', str(staging),
+                        '-fs', 'HFS+', '-format', 'UDZO', str(disk_image)], check=True)
     print(app)
     print(archive)
+    print(disk_image)
 
 
 if __name__ == '__main__':

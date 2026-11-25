@@ -170,3 +170,11 @@ python3 ~/code-push-tags/push_tags.py doctor
 If private Lola Labs PRs are missing, check that your GitHub login and organization authorization permit access to those repositories.
 
 Private configuration and logs are in `~/Library/Application Support/Code Push Tags/`. Do not share tokens or raw private logs.
+
+## Optional app or source
+
+The prototype builder supplies `Code-Push-Tags-macOS.dmg`. Open it and drag the app to Applications. Installation does not enable automatic sounds. Use your own GitHub account, select your repositories, then enable setup when ready. The current app requires Apple Silicon, Python 3, and GitHub CLI. It has an ad-hoc signature and is not notarized. macOS can block a downloaded copy.
+
+You can also build from the private repository source. Repository access must be granted separately. See [installation and source builds](UPDATES.md). No credentials or private settings are included in the bundle or source.
+
+The repository window shows verified live connections and available polling. Access is checked again before a selection is saved. See [app controls](MAC_APP.md).

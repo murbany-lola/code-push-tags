@@ -46,7 +46,9 @@ def config():
 
 
 def tags():
-    return read_json(ROOT / 'manifest.json', {'tags': []})['tags']
+    import sound_library
+    root = sound_library.current_root(ROOT)
+    return [dict(tag, _root=str(root)) for tag in read_json(root / 'manifest.json', {'tags': []})['tags']]
 
 
 def play(event='any', tag_id=None):
@@ -64,8 +66,9 @@ def play(event='any', tag_id=None):
     if not choices:
         return False
     tag = random.choice(choices)
-    path = (ROOT / tag['file']).resolve()
-    if not path.is_relative_to(ROOT) or not path.is_file():
+    root = Path(tag.get('_root', ROOT)).resolve()
+    path = (root / tag['file']).resolve()
+    if not path.is_relative_to(root) or not path.is_file():
         raise ValueError('The audio file is missing or outside the kit directory.')
     subprocess.Popen(['afplay', '-v', '0.45', str(path)], stdin=subprocess.DEVNULL,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
@@ -262,6 +265,8 @@ def poll_all():
             check()
         except (OSError, ValueError, RuntimeError, KeyError) as error:
             failures.append(error)
+    import sound_library
+    sound_library.sync()
     if failures:
         raise RuntimeError('One or more GitHub event checks failed. Check authentication and network access.')
 
