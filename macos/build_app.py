@@ -10,7 +10,7 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNTIME = ('push_tags.py', 'install.py', 'shell.zsh', 'manifest.json', 'ci_events.py', 'repo_preferences.py')
+RUNTIME = ('push_tags.py', 'install.py', 'shell.zsh', 'manifest.json', 'ci_events.py', 'repo_preferences.py', 'sound_library.py')
 
 
 def build(output):

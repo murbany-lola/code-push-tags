@@ -145,7 +145,7 @@ Decided by: person (Max). Use an existing listener when available, otherwise use
 
 ## Sound library
 
-The library has Push, Merge, and Failure groups. A sound can appear in more than one group. In the boombox layout, each item looks like a cassette case. In the DJ layout, each item looks like a record sleeve. Scroll a group to see its other sounds. Select an item to preview it. A new preview stops the previous preview.
+The library has Push, Merge, and Failure groups. A sound can appear in more than one group. In the boombox layout, each item looks like a cassette case. In the DJ layout, each item looks like a record sleeve. Scroll a group to see its other sounds. Double-click an item to preview it. A single click does not play audio or highlight the item. A new preview stops the previous preview.
 
 The groups help you find sounds. They do not restrict the sound you can assign to an event. Use the event selection menus to save an assignment.
 
@@ -154,3 +154,9 @@ Decided by: person (Max). Group the sounds by use case and match their appearanc
 | Record library | Cassette library |
 | --- | --- |
 | ![Record library](docs/library-records.png) | ![Cassette library](docs/library-cassettes.png) |
+
+The app checks the shared sound library at startup and once per hour. Select **Refresh Library** to check immediately. The enabled background watcher also checks once per hour. Shared sounds are stored outside the app bundle, so they do not change the app signature. See [shared library updates](SOUNDS.md).
+
+| Record cards without outlines | Cassette cards without outlines |
+| --- | --- |
+| ![Record cards](docs/library-records-current.png) | ![Cassette cards](docs/library-cassettes-current.png) |

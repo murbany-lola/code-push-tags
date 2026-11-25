@@ -182,3 +182,27 @@ Validation: 14 new connection tests and 12 existing repository preference tests 
 The DMG mounted read-only. It contained the app and an Applications shortcut. The app signature passed from the mounted image. The image was ejected. Build 6 is installed locally. No release was published. The app remains ad-hoc signed and is not notarized.
 
 The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.
+
+## Shared audio, double-click preview, and card borders
+
+The native app and background watcher use the same library helper. The helper downloads one immutable repository revision and activates it only after the complete manifest and WAV files pass checks. Playback keeps the root used for the selected tag.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 199 | 193 |
+| Test net LOC | 189 | 232 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+- reuse-hunter: pass; no findings.
+- path-correctness: release prerequisite; library sync reads `main`, which still contains the original Wheezy sample. Recorded: merge the manifest removal before sharing this automatic-sync build. No code change is required for this release order.
+
+Validation: 18 library tests passed, including offline playback, partial downloads, access denial, cache activation, elapsed-time boundaries, and playback during a pointer change. The 21 existing push and merge tests passed. The focused CI polling test passed with library sync mocked. Swift typecheck and the targeted Apple Silicon build passed. A real authenticated download from `main` cached 11 WAVs in isolated state; all decoded. No credentials were stored with the files.
+
+A native mouse-event check confirmed that one click did not play the first clip and a double-click did. Max then requested no focus change or card outlines. The explicit focus change, card borders, and card focus rings were removed. A new single-click check left the preview idle. The screenshot after that click showed no outline. Build 9 is installed locally.
+
+The final DMG mounted read-only. Its app signature passed. It contains 10 bundled clips, retains Branch outta here, excludes the original Wheezy clip, and includes the shared-library helper. It contains no bytecode cache. The image was ejected. The running prototype can still show the older shared manifest until this PR reaches `main`; select Refresh Library after merge.
+
+The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.

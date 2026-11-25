@@ -330,12 +330,12 @@ class CIFailureTests(unittest.TestCase):
             self.assertTrue(audio.call_args.args[0][-1].endswith('push_tags.py'))
 
     def test_ci_poll_runs_if_merge_poll_fails_or_is_disabled(self):
-        with patch.object(app, 'poll', side_effect=RuntimeError('merge check failed')), patch.object(ci, 'poll') as check:
+        with patch.object(app, 'poll', side_effect=RuntimeError('merge check failed')), patch.object(ci, 'poll') as check, patch('sound_library.sync'):
             with self.assertRaises(RuntimeError):
                 app.poll_all()
             check.assert_called_once_with()
         app.write_json(app.state_dir() / 'config.json', {'merge_enabled': False})
-        with patch.object(ci, 'poll') as check:
+        with patch.object(ci, 'poll') as check, patch('sound_library.sync'):
             app.poll_all()
             check.assert_called_once_with()
 

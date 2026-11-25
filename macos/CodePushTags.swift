@@ -20,6 +20,13 @@ struct Repository: Codable {
     let reason: String?
 }
 
+struct LibraryReport: Decodable {
+    let root: String
+    let revision: String?
+    let updated: Bool
+    let error: String?
+}
+
 struct ConnectionReport: Decodable {
     let repositories: [Repository]
     let checked_at: String
@@ -90,6 +97,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private var timer: Timer?
     private var repositorySheet: RepositorySheet?
     private var repositoryCatalog: [Repository]?
+    private var libraryRoot: URL?
+    private var libraryLoading = false
+    private var libraryCheckedAt = Date.distantPast
+    private let libraryRefresh = HardwareButton(title: "REFRESH LIBRARY", target: nil, action: nil)
+    private let libraryQueue = DispatchQueue(label: "code-push-tags.library", qos: .utility)
     private var catalogLoading = false
     private var connectionVerified = false
     private var connectionCheckedAt = Date.distantPast
@@ -127,8 +139,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             guard let self = self else { return }
             self.refreshSettings()
             if Date().timeIntervalSince(self.connectionCheckedAt) >= 60 { self.refreshRepositoryCatalog() }
+            if Date().timeIntervalSince(self.libraryCheckedAt) >= 3600 { self.refreshLibrary() }
         }
         refreshRepositoryCatalog()
+        refreshLibrary()
         showWindow()
     }
 
@@ -388,7 +402,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }
         bankCount.font = .monospacedSystemFont(ofSize: 9, weight: .medium)
         bankCount.textColor = .secondaryLabelColor
-        let bank = NSStackView(views: [label("SOUND LIBRARY", color: .white.withAlphaComponent(0.65)), bankSpacer, filters, bankCount])
+        libraryRefresh.target = self; libraryRefresh.action = #selector(forceLibraryRefresh)
+        libraryRefresh.isBordered = false
+        libraryRefresh.widthAnchor.constraint(equalToConstant: 132).isActive = true
+        libraryRefresh.heightAnchor.constraint(equalToConstant: 24).isActive = true
+        let bank = NSStackView(views: [label("SOUND LIBRARY", color: .white.withAlphaComponent(0.65)), bankSpacer, libraryRefresh, filters, bankCount])
         bank.spacing = 12
         outer.addArrangedSubview(bank)
         bank.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
@@ -439,8 +457,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let filtered = tags.filter { soundFilter == "all" || useCases($0).contains(soundFilter) }
         bankCount.stringValue = "\(filtered.count) / \(tags.count)"
         let names = ["stackaholics": "WE BUILD DIFFERENT", "stackaholics-welcome-to-main": "WELCOME TO MAIN",
-                     "stackaholics-thats-a-wrap": "THAT’S A WRAP", "wheezy-outta-here": "WHEEZY OUTTA HERE",
-                     "branch-outta-here": "BRANCH OUTTA HERE", "dj-khaled-another-one": "ANOTHER ONE",
+                     "stackaholics-thats-a-wrap": "THAT’S A WRAP", "branch-outta-here": "BRANCH OUTTA HERE", "dj-khaled-another-one": "ANOTHER ONE",
                      "lego-yoda-death": "LEGO YODA", "lego-break-apart": "LEGO DEATH", "terio-kill-em": "TERIO KILL ’EM",
                      "metal-gear-alert": "METAL GEAR ALERT", "windows-xp-error": "WINDOWS XP", "fahhh": "FAHHH"]
         for (event, title, color) in [("push", "PUSH", mint), ("merge", "MERGE", violet), ("ci", "FAILURE", coral)] {
@@ -455,6 +472,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
                 let item = LibraryItem(title: tag.text, target: self, action: #selector(previewPad))
                 item.identifier = NSUserInterfaceItemIdentifier(tag.id)
                 item.isBordered = false
+                item.focusRingType = .none
+                item.toolTip = "Double-click to preview " + tag.text
                 item.number = (tags.firstIndex { $0.id == tag.id } ?? 0) + 1
                 item.label = names[tag.id] ?? tag.text.uppercased()
                 item.category = title
@@ -629,6 +648,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }
     }
 
+    @objc private func forceLibraryRefresh() { refreshLibrary(force: true) }
+
+    private func refreshLibrary(force: Bool = false) {
+        guard !libraryLoading else { return }
+        libraryLoading = true
+        libraryCheckedAt = Date()
+        libraryRefresh.isEnabled = false
+        libraryRefresh.title = "SYNCING…"; libraryRefresh.needsDisplay = true
+        perform("sound_library.py", ["sync"] + (force ? ["--force"] : []), on: libraryQueue, quiet: true) { [weak self] success, output in
+            guard let self = self else { return }
+            self.libraryLoading = false
+            self.libraryRefresh.isEnabled = true
+            self.libraryRefresh.title = "REFRESH LIBRARY"; self.libraryRefresh.needsDisplay = true
+            guard success, let data = output.data(using: .utf8),
+                  let report = try? JSONDecoder().decode(LibraryReport.self, from: data),
+                  let manifest = try? Data(contentsOf: URL(fileURLWithPath: report.root).appendingPathComponent("manifest.json")),
+                  let library = try? JSONDecoder().decode(Manifest.self, from: manifest) else {
+                if force { self.status.stringValue = "Library refresh failed. Local sounds remain available." }
+                return
+            }
+            let root = URL(fileURLWithPath: report.root)
+            if root != self.libraryRoot || report.updated {
+                self.stopPreview()
+                self.libraryRoot = root
+                self.tags = library.tags
+                self.rebuildTransport(); self.rebuildPads(); self.refreshSettings()
+            }
+            self.libraryRefresh.toolTip = report.error ?? "Shared audio from murbany-lola/code-push-tags on main. Double-click an item to preview."
+            if force { self.status.stringValue = report.error ?? "Shared sound library is up to date." }
+        }
+    }
+
     @objc private func saveSelection(_ sender: NSControl) {
         guard let event = sender.identifier?.rawValue,
               let tag = popups[event]?.selectedItem?.representedObject as? String else { return }
@@ -662,7 +713,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         muted = readObject("settings.json")["muted"] as? Bool ?? false
         guard !muted else { refreshSettings(); status.stringValue = "Sounds are muted. Turn sounds on to preview."; return }
         guard let tag = tags.first(where: { $0.id == identifier }),
-              let sound = NSSound(contentsOf: kit.appendingPathComponent(tag.file), byReference: true) else {
+              let sound = NSSound(contentsOf: (libraryRoot ?? kit).appendingPathComponent(tag.file), byReference: true) else {
             status.stringValue = "The audio clip could not be opened."
             return
         }

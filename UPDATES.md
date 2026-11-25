@@ -94,3 +94,9 @@ Review release notes before rollback if a future release changes the configurati
 - Prepare a shared authenticated webhook service before a multi-person webhook rollout.
 
 These items are not implemented by the current prototype.
+
+## Shared audio updates
+
+New audio does not require a new app bundle. Add the WAV and its manifest entry to the repository, then merge them to `main`. Users with repository access receive the update at the next library check. **Refresh Library** checks immediately. Offline users keep their previous complete library. See [sound library procedure](SOUNDS.md).
+
+Merge library removals before sharing a new bundle that uses them. Library sync reads `main`, even when a local prototype was built from a feature branch.

@@ -21,7 +21,7 @@ The merge clips are included. Select one when you want to change the merge sound
 ```sh
 python3 push_tags.py configure --merge-tag stackaholics-welcome-to-main
 python3 push_tags.py configure --merge-tag stackaholics-thats-a-wrap
-python3 push_tags.py configure --merge-tag wheezy-outta-here
+python3 push_tags.py configure --merge-tag branch-outta-here
 python3 push_tags.py configure --merge-tag branch-outta-here
 ```
 
@@ -135,8 +135,6 @@ The unit tests use simulated Git, GitHub, audio, and time responses. They do not
 The clip was generated with TagMyBeat from a source voice. Max confirmed authorization to clone that voice. No license for third-party source voices is granted by this repository.
 
 Sources: [Fenzo guide](https://fenzo.ai/courses/drop-your-producer-tag-every-git-push/hear-it-on-your-OuM3wCUFM), [Git hooks](https://git-scm.com/docs/githooks#_pre_push), and [GitHub event limits](https://docs.github.com/en/rest/activity/events).
-
-The original Wheezy clip is a community upload from [Myinstants](https://www.myinstants.com/en/search/?name=wheezy+outta+here). It was converted from MP3 to WAV. This repository grants no rights to that recording.
 
 Max approved the "Branch outta here!" parody as his merge sound. It was generated with TagMyBeat from the Wheezy reference voice after Max confirmed authorization to clone that voice.
 

@@ -8,6 +8,10 @@ final class LibraryItem: NSButton {
     var playing = false { didSet { needsDisplay = true } }
     var cassette = false { didSet { needsDisplay = true } }
 
+    override func mouseDown(with event: NSEvent) {
+        if event.clickCount == 2 { super.mouseDown(with: event) }
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         let active = playing || isHighlighted
         let face = bounds.insetBy(dx: 2, dy: 3)
@@ -29,9 +33,6 @@ final class LibraryItem: NSButton {
     private func drawCassette(_ rect: NSRect, active: Bool) {
         let shell = NSBezierPath(roundedRect: rect, xRadius: 5, yRadius: 5)
         NSGradient(starting: NSColor(white: 0.12, alpha: 1), ending: NSColor(white: 0.23, alpha: 1))?.draw(in: shell, angle: 90)
-        accent.withAlphaComponent(active ? 1 : 0.45).setStroke()
-        shell.lineWidth = active ? 2 : 1
-        shell.stroke()
 
         let paper = NSRect(x: rect.minX + 24, y: rect.minY + 8, width: rect.width - 94, height: rect.height - 16)
         NSColor(white: active ? 0.27 : 0.19, alpha: 1).setFill()
@@ -84,9 +85,6 @@ final class LibraryItem: NSButton {
         let jacket = NSRect(x: rect.minX, y: rect.minY, width: rect.width - 38, height: rect.height)
         let path = NSBezierPath(roundedRect: jacket, xRadius: 3, yRadius: 3)
         NSGradient(starting: NSColor(white: 0.12, alpha: 1), ending: NSColor(white: active ? 0.27 : 0.2, alpha: 1))?.draw(in: path, angle: 30)
-        accent.withAlphaComponent(active ? 1 : 0.4).setStroke()
-        path.lineWidth = active ? 2 : 1
-        path.stroke()
         accent.withAlphaComponent(active ? 0.9 : 0.55).setFill()
         NSRect(x: jacket.minX + 2, y: jacket.minY + 3, width: 4, height: jacket.height - 6).fill()
         text(String(format: "%02d", number), in: NSRect(x: jacket.minX + 13, y: jacket.minY + 17, width: 23, height: 16),
