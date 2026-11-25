@@ -99,7 +99,7 @@ class ListenerTests(unittest.TestCase):
                 result = subprocess.CompletedProcess([], 0)
                 with patch.object(listen.subprocess, 'run', return_value=result) as command:
                     listen.remove_pilot_hook(target, env)
-                command.assert_called_once_with(['gh', 'api', '--method', 'DELETE', route],
+                command.assert_called_once_with(['gh', 'api', '--include', '--method', 'DELETE', route],
                                                 env=env, capture_output=True)
                 self.assertFalse(path.exists())
 
@@ -111,6 +111,30 @@ class ListenerTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'Could not remove'):
                 listen.remove_pilot_hook(saved['target'], {})
         self.assertEqual(listen.app.read_json(path, {}), saved)
+
+    def test_already_removed_hook_clears_saved_identity(self):
+        path = self.state / 'webhook-pilot.json'
+        saved = {'target': '--repo=coder/project', 'id': 17}
+        for protocol in (b'HTTP/1.1', b'HTTP/2.0'):
+            with self.subTest(protocol=protocol):
+                listen.app.write_json(path, saved)
+                response = subprocess.CompletedProcess([], 1, stdout=protocol + b' 404 Not Found\r\n\r\n')
+                with patch.object(listen.subprocess, 'run', return_value=response):
+                    listen.remove_pilot_hook(saved['target'], {})
+                self.assertFalse(path.exists())
+
+    def test_other_http_errors_preserve_saved_identity(self):
+        path = self.state / 'webhook-pilot.json'
+        saved = {'target': '--repo=coder/project', 'id': 17}
+        for status in (b'403 Forbidden', b'500 Internal Server Error'):
+            with self.subTest(status=status):
+                listen.app.write_json(path, saved)
+                response = subprocess.CompletedProcess([], 1, stdout=b'HTTP/2.0 ' + status +
+                                                       b'\r\n\r\n{"message":"not a 404"}')
+                with patch.object(listen.subprocess, 'run', return_value=response):
+                    with self.assertRaisesRegex(RuntimeError, 'Could not remove'):
+                        listen.remove_pilot_hook(saved['target'], {})
+                self.assertEqual(listen.app.read_json(path, {}), saved)
 
     def test_other_target_saved_hook_is_not_removed(self):
         path = self.state / 'webhook-pilot.json'
@@ -135,7 +159,7 @@ class ListenerTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'forwarding stopped'):
                 listen.run('--repo=coder/project')
         self.assertEqual(command.call_args.args[0],
-                         ['gh', 'api', '--method', 'DELETE', 'repos/coder/project/hooks/19'])
+                         ['gh', 'api', '--include', '--method', 'DELETE', 'repos/coder/project/hooks/19'])
         self.assertFalse((self.state / 'webhook-pilot.json').exists())
 
     def test_receiver_start_failure_does_not_start_forwarding(self):

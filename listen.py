@@ -38,10 +38,13 @@ def remove_pilot_hook(target, env):
     saved = app.read_json(path, {})
     if saved.get('target') != target:
         return
-    result = subprocess.run(['gh', 'api', '--method', 'DELETE',
+    result = subprocess.run(['gh', 'api', '--include', '--method', 'DELETE',
                              f"{hook_route(target)}/{saved['id']}"],
                             env=env, capture_output=True)
-    if result.returncode:
+    lines = (result.stdout or b'').splitlines()
+    status = lines[0].split() if lines else []
+    missing = len(status) > 1 and status[1] == b'404'
+    if result.returncode and not missing:
         raise RuntimeError('Could not remove the saved pilot webhook. Check GitHub hook settings.')
     path.unlink()
 
@@ -79,9 +82,9 @@ def run_locked(target, port):
                 if time.monotonic() >= deadline:
                     raise RuntimeError('The local webhook receiver did not start.')
                 time.sleep(0.1)
-        print(f'Listening for your merges as {login}. Keep this process running.', flush=True)
+        print(f'Listening for your merges and CI failures as {login}. Keep this process running.', flush=True)
         # The URL prevents the extension from printing private event payloads.
-        forward = subprocess.Popen(['gh', 'webhook', 'forward', target, '--events=pull_request',
+        forward = subprocess.Popen(['gh', 'webhook', 'forward', target, '--events=pull_request,workflow_run',
                                     f'--url=http://127.0.0.1:{port}/webhook', '--secret', secret],
                                    env=env, stdout=subprocess.DEVNULL)
         saved = False

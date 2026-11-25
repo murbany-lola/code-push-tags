@@ -60,7 +60,7 @@ def launch_config():
         raise RuntimeError('gh is missing from PATH.')
     path = ':'.join(dict.fromkeys([str(Path(sys.executable).resolve().parent), str(Path(gh).parent),
                                   '/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin', '/usr/sbin', '/sbin']))
-    return {'Label': LABEL, 'ProgramArguments': [str(Path(sys.executable).resolve()), str(ROOT / 'push_tags.py'), 'poll'],
+    return {'Label': LABEL, 'ProgramArguments': [str(Path(sys.executable).resolve()), '-B', str(ROOT / 'push_tags.py'), 'poll'],
             'StartInterval': 60, 'RunAtLoad': True,
             'EnvironmentVariables': {'PATH': path},
             'StandardOutPath': str(state_dir() / 'watcher.log'),

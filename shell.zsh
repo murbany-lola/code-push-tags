@@ -7,7 +7,7 @@ typeset -g CODE_PUSH_TAGS_LOADED=1
 typeset -g CODE_PUSH_TAGS_ROOT=${${(%):-%N}:A:h}
 typeset -g CODE_PUSH_TAGS_PYTHON=${commands[python3]}
 push-tags() {
-  "$CODE_PUSH_TAGS_PYTHON" "$CODE_PUSH_TAGS_ROOT/push_tags.py" "$@"
+  "$CODE_PUSH_TAGS_PYTHON" -B "$CODE_PUSH_TAGS_ROOT/push_tags.py" "$@"
 }
 git() {
   local -a scan
@@ -29,7 +29,7 @@ git() {
   command git "$@"
   local git_status=$?
   if (( git_status == 0 && is_push && ${#CODE_PUSH_TAGS_PYTHON} )); then
-    "$CODE_PUSH_TAGS_PYTHON" "$CODE_PUSH_TAGS_ROOT/push_tags.py" play --event push </dev/null >/dev/null 2>&1 &!
+    "$CODE_PUSH_TAGS_PYTHON" -B "$CODE_PUSH_TAGS_ROOT/push_tags.py" notify-push -- "$@" </dev/null >/dev/null 2>&1 &!
   fi
   return $git_status
 }

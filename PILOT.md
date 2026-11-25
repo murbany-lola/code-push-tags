@@ -1,41 +1,73 @@
-# Personal webhook pilot
+# Private Mac prototype
 
-## Scope
+## Current state
 
-Max remains the only enrolled person. The code stays in the private personal repository. Other engineers are not invited or enrolled.
+The source is on `feat/macos-app-ci-sounds` in Max's private personal repository. The installed local prototype is `~/Applications/Code Push Tags.app`. Version 0.1.0, build 2 targets Apple Silicon and macOS 12 or later.
 
-Global controls: `push-tags off` and `push-tags on`. They mute or enable both event types across all repositories.
+Max remains the pilot user. No invitations or release publication were performed by this agent. Intel support and automatic updates are deferred.
 
-Current push sound: `stackaholics` ("We build different"). Current merge sound: `branch-outta-here`.
+The existing checkout-based polling watcher remains installed. The native app uses the same local preferences. Opening the app does not replace that installation.
 
-The live test used `murbany-lola/code-push-tags` PR #1. It merged into a temporary branch. Polling was paused. The signed webhook receiver saved the merge. A second delivery did not play again. Polling was restored. The temporary target branch was removed.
+## Current behavior
 
-## Current connection
+The app has Push and Merge decks, a center master strip, and sample pads. Use-case groups help people browse. Every clip remains available for every event. A new preview stops the previous preview. Master mute stops the preview and suppresses all event sounds.
 
-The `lola-labs` organization test hook is active for `pull_request` events. Its ID is `716782681`. The signed Mac receiver runs on `127.0.0.1:18769`. GitHub recorded HTTP 200 for a real organization ping. No real Lola Labs merge has been used to test the new hook yet.
+People can select individual repositories, whole organizations, all accessible repositories, or none. Repository and organization selections form a union. Their GitHub account still controls private access. Previewing does not depend on repository selection.
 
-Decided by: person (Max). Max approved the temporary one-person organization-hook exception after the scope and infrastructure rule were explained in this session.
+CI/CD attribution uses verified GitHub actors, exact owned PR head or merge commits, and one verified source-PR link from a bot-created follow-up PR. Shared branch history and nearby timestamps do not establish attribution. Failed and timed-out Actions runs can alert once per run attempt. Cancelled runs do not.
 
-The existing token lacked `admin:org_hook`. Max completed GitHub CLI device authorization. The pilot credential was updated in Keychain. No credential value is in this repository.
+Polling and signed webhook deliveries share saved event state. Muted and excluded events are recorded without replay.
 
-The listener is running as a pilot process. It does not yet restart automatically after a Mac reboot. Polling remains registered with launchd. The code is in PR #2 and is not merged.
+## Live connection
 
-## Lola Labs connection procedure
+Max approved a temporary Lola Labs organization test hook. The current saved hook ID is `716801373`. It subscribes to `pull_request` and `workflow_run`. The receiver listens on `127.0.0.1:18769` through GitHub's authenticated test-forwarding service.
 
-Target: one temporary GitHub CLI test webhook for the `lola-labs` organization. Subscribe only to `pull_request` events. Forward signed events through GitHub's authenticated service to Max's local receiver. The receiver confirms the PR and filters for Max before playback.
+The previous test relay disconnected and its hook disappeared. Cleanup now accepts an exact HTTP 404 as an already-removed hook. Other errors preserve saved identity. The current connection is active. Polling remains the fallback.
 
-The user instructions require infrastructure changes through platform PRs. The agent treated the organization-wide webhook as infrastructure. Max explicitly approved the temporary pilot exception before the hook was created.
+The listener is a running pilot process. It does not restart automatically after a Mac reboot. GitHub documents test forwarding for development and testing and permits one connection per target.
 
-Authorized command:
+## Key choices
 
-```sh
-python3 listen.py --org lola-labs
-```
+Decided by: person (Max). Keep the project in his private personal GitHub repository. Coworkers can opt in later.
 
-The command uses the existing token from Keychain. It needs hook administration access. It does not change Lola product code, deployments, or CI workflows.
+Decided by: person (Max). Use a small native app with local previews, event choices, one global mute, and repo or org selection.
 
-Acceptance: confirm connection, merge a Max-authored or Max-merged PR, confirm one sound, and confirm no second sound from polling. The Mac must be awake and online. Source branch deletion is not required for the event.
+Decided by: person (Max). Test locally before sharing. Build for Apple Silicon now and add Intel later.
 
-Rollback: stop the listener with Control-C. The command deletes its saved test webhook. Polling remains installed.
+Decided by: person (Max). Use a DJ-table layout with two decks and sample pads. Remove the gun graphic. New previews stop earlier previews.
 
-GitHub permits only one forwarding session for each organization. This is a one-person test. A shared authenticated service must precede a coworker rollout. Each coworker must opt in to their own Mac receiver and can mute or remove it.
+Decided by: person (Max). Use the LEGO break-apart recording and label it "LEGO death". The Yoda scream is excluded from the app.
+
+Decided by: person (Max). Use the original Terio voice and a shorter tag. The current 2.3-second ending cut was selected by the agent after showing both cuts.
+
+Decided by: person (Max). Expand CI alerts to downstream workflows and bot-created follow-up PRs caused by his work.
+
+Decided by: person (Max). Approve the temporary organization-hook exception after the infrastructure rule and exact scope were explained.
+
+Decided by: person (Max). Approve the targeted local prototype build and UI checks. Normal build rules remain in effect elsewhere.
+
+Decided by: agent. Propose versioned private GitHub Releases for manual pilot updates. No release or automatic updater was created.
+
+## Validation
+
+Focused unit tests passed for CI attribution, repo preferences, event filters, existing push/merge behavior, receiver handling, listener lifecycle, and global mute. The final record is in REVIEW.md.
+
+A real personal-repository squash merge reached the receiver while polling was paused. A second signed delivery did not play again. Polling was restored. The temporary branch and test hook were removed.
+
+A signed local replay used a real failed Actions run and API verification. It recorded one event and rejected the duplicate. The replay used isolated saved state and the current sound choice.
+
+Read-only checks traced three real release-chain runs through backend bot PR #1165 to Max's merged source PR #1116. Those runs succeeded, so they validate attribution rather than failure playback. An unrelated failed bot run was not attributed to Max.
+
+The wiki freshness check could not validate all delivery dependencies. Current workflow YAML was fetched directly before those checks.
+
+The app was built and opened locally. Close/reopen, Cancel, repo refresh, preview replacement, and global mute were exercised. Signature checks passed after UI use. The bundle has only the allowlisted runtime and 11 sound files. Python bytecode writes are disabled for app, shell, and installed watcher commands.
+
+## Known limits
+
+The app requires Python 3.9 or later and GitHub CLI. It has an ad-hoc local signature, not Developer ID signing or notarization.
+
+The downstream polling scan uses a one-day checkpoint overlap. It discovers repos from open PRs, saved own merges, and explicit repo selections. Webhook coverage is currently the one-person Lola Labs test connection.
+
+No new failing deployment was triggered for testing. A shared authenticated webhook service is future work before a multi-person webhook rollout.
+
+See MAC_APP.md for controls, UPDATES.md for update procedures, and SOUNDS.md for recordings and use-case metadata.

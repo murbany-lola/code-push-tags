@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Play local audio tags after a push or a confirmed pull request merge."""
+"""Play local audio tags for pushes, merges, and failed CI runs."""
 import argparse
 import datetime as dt
 import fcntl
@@ -53,10 +53,10 @@ def play(event='any', tag_id=None):
     if read_json(state_dir() / 'settings.json', {}).get('muted', False):
         return False
     preferences = config()
-    if event in ('push', 'merge') and not preferences.get(f'{event}_enabled', True):
+    if event in ('push', 'merge', 'ci') and not preferences.get(f'{event}_enabled', True):
         return False
-    if tag_id is None and event in ('push', 'merge'):
-        tag_id = preferences.get(f'{event}_tag')
+    if tag_id is None and event in ('push', 'merge', 'ci'):
+        tag_id = preferences.get(f'{event}_tag', 'lego-break-apart' if event == 'ci' else None)
         if tag_id == 'random':
             tag_id = None
     choices = [tag for tag in tags() if (tag_id is None or tag['id'] == tag_id)
@@ -83,8 +83,18 @@ def notify(event):
 def push(args):
     status = subprocess.call(['git', 'push', *args])
     if status == 0:
-        notify('push')
+        notify_push()
     return status if status >= 0 else 128 - status
+
+
+def notify_push(git_args=None):
+    try:
+        import repo_preferences
+        if repo_preferences.allowed(None) or repo_preferences.allowed(repo_preferences.git_repository(git_args)):
+            notify('push')
+    except Exception:
+        # A notification error must not change a successful push.
+        pass
 
 
 def gh_env():
@@ -221,8 +231,11 @@ def poll(now=None):
         state['seen'] = sorted(seen.items(), key=lambda pair: pair[1])[-2000:]
         state['checkpoint'] = stamp(now)
         write_json(path, state)
-        for _ in events:
-            notify('merge')
+        import repo_preferences
+        for identity in events:
+            repo = identity.removeprefix('https://api.github.com/repos/').split('/pulls/', 1)[0]
+            if repo_preferences.allowed(repo):
+                notify('merge')
 
 
 def doctor():
@@ -241,13 +254,25 @@ def doctor():
     return 0 if good else 1
 
 
+def poll_all():
+    import ci_events
+    failures = []
+    for check in (poll, ci_events.poll):
+        try:
+            check()
+        except (OSError, ValueError, RuntimeError, KeyError) as error:
+            failures.append(error)
+    if failures:
+        raise RuntimeError('One or more GitHub event checks failed. Check authentication and network access.')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
     commands.add_parser('list')
     player = commands.add_parser('play')
     player.add_argument('tag', nargs='?')
-    player.add_argument('--event', choices=['any', 'push', 'merge'], default='any')
+    player.add_argument('--event', choices=['any', 'push', 'merge', 'ci'], default='any')
     commands.add_parser('off')
     commands.add_parser('on')
     for name in ('mute', 'unmute', 'poll', 'doctor'):
@@ -255,9 +280,12 @@ def main():
     preferences = commands.add_parser('configure')
     preferences.add_argument('--push-tag')
     preferences.add_argument('--merge-tag')
+    preferences.add_argument('--ci-tag')
     preferences.add_argument('--push', choices=['on', 'off'])
     preferences.add_argument('--merge', choices=['on', 'off'])
+    preferences.add_argument('--ci', choices=['on', 'off'])
     commands.add_parser('push').add_argument('args', nargs=argparse.REMAINDER)
+    commands.add_parser('notify-push').add_argument('args', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     if args.command == 'list':
         for tag in tags():
@@ -271,7 +299,7 @@ def main():
     elif args.command == 'configure':
         settings = config()
         available = tags()
-        for event in ('push', 'merge'):
+        for event in ('push', 'merge', 'ci'):
             selected = getattr(args, f'{event}_tag')
             if selected is not None:
                 if selected != 'random' and not any(tag['id'] == selected for tag in available):
@@ -283,8 +311,10 @@ def main():
         write_json(state_dir() / 'config.json', settings)
     elif args.command == 'push':
         return push(args.args[1:] if args.args[:1] == ['--'] else args.args)
+    elif args.command == 'notify-push':
+        notify_push(args.args[1:] if args.args[:1] == ['--'] else args.args)
     elif args.command == 'poll':
-        poll()
+        poll_all()
     elif args.command == 'doctor':
         return doctor()
     return 0

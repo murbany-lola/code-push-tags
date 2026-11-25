@@ -13,3 +13,9 @@ build_tags.py
 !audio/wheezy-outta-here.wav
 !audio/branch-outta-here.wav
 !audio/dj-khaled-another-one.wav
+!audio/terio-kill-em.wav
+!audio/metal-gear-alert.wav
+!audio/windows-xp-error.wav
+!audio/fahhh.wav
+dist/
+!audio/lego-break-apart.wav

@@ -5,37 +5,102 @@
       "id": "stackaholics",
       "text": "Stackaholics! We build different!",
       "file": "audio/stackaholics.wav",
-      "event": "any"
+      "event": "any",
+      "use_cases": [
+        "push"
+      ]
     },
     {
       "id": "stackaholics-welcome-to-main",
       "text": "Stackaholics! Welcome to main!",
       "file": "audio/stackaholics-welcome-to-main.wav",
-      "event": "merge"
+      "event": "merge",
+      "use_cases": [
+        "merge"
+      ]
     },
     {
       "id": "stackaholics-thats-a-wrap",
       "text": "Stackaholics! That's a wrap!",
       "file": "audio/stackaholics-thats-a-wrap.wav",
-      "event": "merge"
+      "event": "merge",
+      "use_cases": [
+        "merge"
+      ]
     },
     {
       "id": "wheezy-outta-here",
       "text": "Wheezy outta here",
       "file": "audio/wheezy-outta-here.wav",
-      "event": "merge"
+      "event": "merge",
+      "use_cases": [
+        "merge"
+      ]
     },
     {
       "id": "branch-outta-here",
       "text": "Branch outta here!",
       "file": "audio/branch-outta-here.wav",
-      "event": "merge"
+      "event": "merge",
+      "use_cases": [
+        "merge"
+      ]
     },
     {
       "id": "dj-khaled-another-one",
       "text": "Another one",
       "file": "audio/dj-khaled-another-one.wav",
-      "event": "any"
+      "event": "any",
+      "use_cases": [
+        "push",
+        "merge"
+      ]
+    },
+    {
+      "id": "terio-kill-em",
+      "text": "Terio kill \u2019em",
+      "file": "audio/terio-kill-em.wav",
+      "event": "any",
+      "use_cases": [
+        "push",
+        "merge"
+      ]
+    },
+    {
+      "id": "metal-gear-alert",
+      "text": "Metal Gear alert",
+      "file": "audio/metal-gear-alert.wav",
+      "event": "ci",
+      "use_cases": [
+        "ci"
+      ]
+    },
+    {
+      "id": "windows-xp-error",
+      "text": "Windows XP error",
+      "file": "audio/windows-xp-error.wav",
+      "event": "ci",
+      "use_cases": [
+        "ci"
+      ]
+    },
+    {
+      "id": "fahhh",
+      "text": "Fahhh",
+      "file": "audio/fahhh.wav",
+      "event": "ci",
+      "use_cases": [
+        "ci"
+      ]
+    },
+    {
+      "id": "lego-break-apart",
+      "text": "LEGO death",
+      "file": "audio/lego-break-apart.wav",
+      "event": "ci",
+      "use_cases": [
+        "ci"
+      ]
     }
   ]
 }

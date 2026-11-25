@@ -2,7 +2,9 @@
 
 **Joining the pilot? Start with the [coworker setup guide](TEAM_README.md).**
 
-An optional sound for successful Git pushes and GitHub pull request merges on macOS.
+The [Apple Silicon app prototype](MAC_APP.md) adds local previews, event choices, global mute, and repository or organization selection. See [updates](UPDATES.md) and the [sound library](SOUNDS.md).
+
+Optional local sounds for successful Git pushes, GitHub PR merges, and attributed GitHub Actions failures on macOS.
 
 The pilot clip says: **Stackaholics! We build different!** Max approved this clip. Each person installs the tool on their own Mac. There is no team broadcast or automatic enrollment.
 
