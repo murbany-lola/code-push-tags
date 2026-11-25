@@ -173,3 +173,15 @@ An organization pilot uses `--org lola-labs` after the required organization-cha
 Validation: a real squash merge on temporary branches in the personal repository reached the receiver while polling was paused. A second signed delivery returned `recorded: false`. Polling was then restored. The test did not change `main`.
 
 Source: [GitHub CLI webhook forwarding](https://docs.github.com/en/webhooks/testing-and-troubleshooting-webhooks/using-the-github-cli-to-forward-webhooks-for-testing).
+
+## Another one
+
+The optional DJ Khaled clip uses the existing player and settings:
+
+```sh
+push-tags play dj-khaled-another-one
+push-tags configure --push-tag dj-khaled-another-one
+push-tags configure --merge-tag dj-khaled-another-one
+```
+
+Adding the clip does not change an existing sound selection. The [source recording](https://www.myinstants.com/en/search/?name=dj+khaled+another+one) is a community upload converted from MP3. This repository grants no rights to that recording.

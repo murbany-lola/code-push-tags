@@ -89,3 +89,18 @@ Validation: 17 receiver tests, 13 listener tests, and 2 global mute tests passed
 The gate reported four secret-related source lines. These lines read an environment secret or construct Keychain commands. No secret values were added to the repository.
 
 The webhook forwarding service is for development and testing. It supports one forwarding session per target. Coworker rollout remains outside this one-person pilot. Max later approved the temporary organization-hook exception. The connection is active; see PILOT.md.
+
+## Another one option
+
+The optional DJ Khaled clip uses the existing manifest, player, and selection commands. The active push and merge settings remain unchanged.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 7 | 7 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+reuse-hunter: pass; no findings. The manifest ID is unique. The WAV decodes and lasts 0.83 seconds. No runtime code changed.
