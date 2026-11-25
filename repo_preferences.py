@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Select repositories and organizations for local sounds."""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
+import datetime as dt
+import fcntl
 import json
 import re
 import subprocess
 import sys
 from urllib.parse import urlsplit
+import urllib.request
 
 import push_tags as app
 
@@ -100,11 +104,93 @@ def repositories():
         page += 1
 
 
-def set_preferences(repos, orgs, all_repos=False):
+def listener_status():
+    status = {'target': None, 'events': [], 'connected': False,
+              'reason': 'No connected listener on this Mac. Polling is available.'}
+    try:
+        saved = app.read_json(app.state_dir() / 'webhook-pilot.json', {})
+        target = saved.get('target', '')
+        flag, _, name = target.partition('=')
+        if flag == '--repo' and valid_repository(name):
+            route = f'repos/{name}/hooks'
+        elif flag == '--org' and ORGANIZATION.fullmatch(name) and name not in ('.', '..'):
+            route = f'orgs/{name}/hooks'
+        else:
+            return status
+        if type(saved.get('id')) is not int or saved['id'] <= 0:
+            return status
+        status['target'] = target
+        with (app.state_dir() / 'listener.lock').open('r') as lock:
+            try:
+                fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                pass
+            else:
+                fcntl.flock(lock, fcntl.LOCK_UN)
+                return status
+        with urllib.request.urlopen('http://127.0.0.1:18769/health', timeout=2) as response:
+            if response.status != 200:
+                return status
+        hook = app.gh_json(['api', f"{route}/{saved['id']}"], app.gh_env())
+        if hook.get('active') is not True or hook.get('name') != 'cli':
+            return status
+        status.update(connected=True, events=hook.get('events', []),
+                      reason='Connected listener verified on this Mac and GitHub.')
+    except (OSError, RuntimeError, ValueError, TypeError, AttributeError):
+        status['reason'] = 'Listener could not be verified. Polling is available.'
+    return status
+
+
+def connections():
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        catalogue = workers.submit(repositories)
+        listener = workers.submit(listener_status)
+        values = catalogue.result()
+        live = listener.result()
+    found = {repo['full_name'].casefold(): dict(repo, access='confirmed') for repo in values}
+    for name in get()['repositories'] or []:
+        if name.casefold() not in found:
+            found[name.casefold()] = {'full_name': name, 'private': False, 'organization': False,
+                                      'access': 'unconfirmed'}
+    flag, _, target = (live.get('target') or '').partition('=')
+    events = live['events']
+    for key, repo in found.items():
+        covered = live['connected'] and (key == target.casefold() if flag == '--repo'
+                                         else key.split('/')[0] == target.casefold())
+        confirmed = repo['access'] == 'confirmed'
+        repo['merge_live'] = bool(confirmed and covered and ('pull_request' in events or '*' in events))
+        repo['ci_live'] = bool(confirmed and covered and ('workflow_run' in events or '*' in events))
+        if not confirmed:
+            repo.update(connection='unconfirmed', reason='Repository access could not be confirmed. Refresh or check GitHub sign-in.')
+        elif repo['merge_live'] and repo['ci_live']:
+            repo.update(connection='live', reason='Live merge and CI events; polling remains available.')
+        elif repo['merge_live'] or repo['ci_live']:
+            event = 'merge' if repo['merge_live'] else 'CI'
+            repo.update(connection='partial', reason=f'Live {event} events; other events use polling.')
+        else:
+            reason = live['reason'] if covered or not live['connected'] else 'No connected listener covers this repository.'
+            repo.update(connection='polling', reason=reason + ' Polling checks run every 60 seconds when setup is enabled.')
+    return {'repositories': sorted(found.values(), key=lambda repo: repo['full_name'].casefold()),
+            'checked_at': app.stamp(dt.datetime.now(app.UTC)), 'listener': live}
+
+
+def verify_access(repos, orgs):
+    values = repositories()
+    accessible = {repo['full_name'].casefold() for repo in values}
+    organizations = {repo['full_name'].split('/')[0].casefold() for repo in values if repo['organization']}
+    if any(repo.casefold() not in accessible for repo in repos):
+        raise ValueError('Repository access could not be confirmed. Refresh the list before saving.')
+    if any(org.casefold() not in organizations for org in orgs):
+        raise ValueError('No accessible repositories were found for a selected organization. Refresh before saving.')
+
+
+def set_preferences(repos, orgs, all_repos=False, verify=False):
     if not all(valid_repository(repo) for repo in repos):
         raise ValueError('Use repository names in owner/name format.')
     if not all(ORGANIZATION.fullmatch(org) and org not in ('.', '..') for org in orgs):
         raise ValueError('Use organization names without a slash.')
+    if verify:
+        verify_access(repos, orgs)
     settings = app.config()
     settings['repositories'] = None if all_repos else sorted(set(repos), key=str.casefold)
     settings['organizations'] = [] if all_repos else sorted(set(orgs), key=str.casefold)
@@ -115,9 +201,10 @@ def set_preferences(repos, orgs, all_repos=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest='command', required=True)
-    for command in ('list', 'organizations', 'get'):
+    for command in ('list', 'organizations', 'get', 'connections'):
         commands.add_parser(command)
     setter = commands.add_parser('set')
+    setter.add_argument('--verify-access', action='store_true')
     setter.add_argument('--repo', action='append', default=[])
     setter.add_argument('--org', action='append', default=[])
     setter.add_argument('--all', dest='all_repos', action='store_true')
@@ -127,12 +214,14 @@ def main():
     elif args.command == 'organizations':
         value = sorted({repo['full_name'].split('/')[0] for repo in repositories()
                         if repo['organization']}, key=str.casefold)
+    elif args.command == 'connections':
+        value = connections()
     elif args.command == 'get':
         value = get()
     else:
         if args.all_repos and (args.repo or args.org):
             parser.error('--all cannot be combined with --repo or --org')
-        value = set_preferences(args.repo, args.org, args.all_repos)
+        value = set_preferences(args.repo, args.org, args.all_repos, verify=args.verify_access)
     print(json.dumps(value))
 
 

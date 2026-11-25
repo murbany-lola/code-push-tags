@@ -127,3 +127,30 @@ Decided by: person (Max). Max requested both layouts, local storage, and record 
 | DJ decks | Boombox |
 | --- | --- |
 | ![DJ decks](docs/dj-layout.png) | ![Boombox](docs/boombox-layout.png) |
+
+## Repository access and event connections
+
+Open **Repositories / Orgs** to check access and connection status. Refresh reads the repository list with your GitHub account. Save selection checks access again before it writes your choices. A failed check keeps your previous saved selection.
+
+- **Live**: this Mac has a connected listener for merge and CI events.
+- **Live + polling**: the listener covers one event type. Polling supplies the other type when setup is enabled.
+- **Polling available**: no verified local listener covers the repository. Enable setup to receive polling notifications.
+- **Access not confirmed**: refresh or check GitHub sign-in.
+
+The app uses an existing connected listener. It does not create webhooks. Access to a repository does not prove permission to read its webhooks. A failed listener check leaves polling available. An unrelated webhook cannot send events to this Mac.
+
+Connection checks run when the app opens, when the repository window opens, and once per minute while the app runs. Counts in the main window cover the repository list, including repositories you have not selected. The tooltip gives the check time. Your selected repositories and organizations still control which sounds can play.
+
+Decided by: person (Max). Use an existing listener when available, otherwise use polling, and confirm repository access.
+
+## Sound library
+
+The library has Push, Merge, and Failure groups. A sound can appear in more than one group. In the boombox layout, each item looks like a cassette case. In the DJ layout, each item looks like a record sleeve. Scroll a group to see its other sounds. Select an item to preview it. A new preview stops the previous preview.
+
+The groups help you find sounds. They do not restrict the sound you can assign to an event. Use the event selection menus to save an assignment.
+
+Decided by: person (Max). Group the sounds by use case and match their appearance to the selected layout.
+
+| Record library | Cassette library |
+| --- | --- |
+| ![Record library](docs/library-records.png) | ![Cassette library](docs/library-cassettes.png) |

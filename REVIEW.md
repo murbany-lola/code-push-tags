@@ -159,3 +159,26 @@ Both layouts use the existing event controls and settings. The separate artwork 
 Validation: the targeted Apple Silicon build passed. The app signature check passed. A temporary Swift check verified the first selection animation, continuous preview motion, a save during a preview, and stopping all motion. It used animation state checks without time delays. Native UI checks verified both layout switches and the saved boombox choice after an app restart. Screenshots show both layouts. Build 4 is installed locally. No release was published.
 
 The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.
+
+## Connection status, grouped library, and DMG
+
+The change reuses the repository catalog, GitHub credentials, local listener state, event filters, and preview player. It replaces the sound pad view with a cassette or record item.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 258 | 261 |
+| Test net LOC | 146 | 147 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+- reuse-hunter: pass; no findings.
+- loc-minimizer: pass; no findings.
+- path-correctness: minor; a fresh install implied active polling before setup. Applied: state that polling is available and requires enabled setup. A focused regression check passed.
+
+Validation: 14 new connection tests and 12 existing repository preference tests passed. The focused polling text regression passed after the review fix. Swift typecheck and the targeted Apple Silicon build passed. A live read confirmed access to 29 repositories: 28 had connected merge and CI listeners, and one used polling. No hooks were created. Native UI checks covered both library styles, category filters, and a filtered repository list after a fresh access check. An observed list alignment error was fixed; both lists now start at the top. The installed app signature passed after normal use.
+
+The DMG mounted read-only. It contained the app and an Applications shortcut. The app signature passed from the mounted image. The image was ejected. Build 6 is installed locally. No release was published. The app remains ad-hoc signed and is not notarized.
+
+The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.

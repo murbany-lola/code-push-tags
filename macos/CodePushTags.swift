@@ -15,6 +15,14 @@ struct Manifest: Decodable {
 struct Repository: Codable {
     let full_name: String
     let organization: Bool
+    let access: String?
+    let connection: String?
+    let reason: String?
+}
+
+struct ConnectionReport: Decodable {
+    let repositories: [Repository]
+    let checked_at: String
 }
 
 private let mint = NSColor(srgbRed: 0.54, green: 0.96, blue: 0.69, alpha: 1)
@@ -56,37 +64,6 @@ class HardwareButton: NSButton {
     }
 }
 
-final class SoundPad: NSButton {
-    var number = 0
-    var label = ""
-    var category = ""
-    var accent = mint
-    var playing = false { didSet { needsDisplay = true } }
-    override func draw(_ dirtyRect: NSRect) {
-        let active = playing || isHighlighted
-        let base = bounds.insetBy(dx: 2, dy: 2)
-        NSColor.black.withAlphaComponent(0.65).setFill()
-        NSBezierPath(roundedRect: base.offsetBy(dx: 0, dy: -1), xRadius: 9, yRadius: 9).fill()
-        let face = base.insetBy(dx: 1, dy: 1)
-        let path = NSBezierPath(roundedRect: face, xRadius: 8, yRadius: 8)
-        let top = active ? accent.withAlphaComponent(0.32) : NSColor(srgbRed: 0.19, green: 0.20, blue: 0.23, alpha: 1)
-        let bottom = active ? accent.withAlphaComponent(0.14) : NSColor(srgbRed: 0.12, green: 0.13, blue: 0.15, alpha: 1)
-        NSGradient(starting: bottom, ending: top)?.draw(in: path, angle: 90)
-        accent.withAlphaComponent(active ? 1 : 0.45).setStroke(); path.lineWidth = active ? 2 : 1; path.stroke()
-        (String(format: "%02d", number) as NSString).draw(at: NSPoint(x: 13, y: bounds.height - 24),
-            withAttributes: [.font: NSFont.monospacedSystemFont(ofSize: 10, weight: .medium), .foregroundColor: accent.withAlphaComponent(0.75)])
-        ((active ? "●" : "▸") as NSString).draw(at: NSPoint(x: bounds.width - 24, y: bounds.height - 25),
-            withAttributes: [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: accent])
-        let paragraph = NSMutableParagraphStyle(); paragraph.alignment = .left; paragraph.lineBreakMode = .byWordWrapping
-        (label as NSString).draw(in: NSRect(x: 13, y: 25, width: bounds.width - 26, height: 31),
-            withAttributes: [.font: NSFont.monospacedSystemFont(ofSize: 12, weight: .bold), .foregroundColor: NSColor.white.withAlphaComponent(0.94), .paragraphStyle: paragraph])
-        (category as NSString).draw(at: NSPoint(x: 13, y: 13),
-            withAttributes: [.font: NSFont.monospacedSystemFont(ofSize: 8, weight: .medium), .foregroundColor: NSColor.white.withAlphaComponent(0.4)])
-        accent.withAlphaComponent(active ? 1 : 0.55).setFill()
-        NSBezierPath(roundedRect: NSRect(x: bounds.width - 39, y: 15, width: 25, height: 3), xRadius: 1.5, yRadius: 1.5).fill()
-    }
-}
-
 final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private let events = [("push", "Successful push"), ("merge", "PR merged"), ("ci", "PR CI failure")]
     private var tags: [SoundTag] = []
@@ -97,7 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private let powerStatus = NSTextField(labelWithString: "●  SOUNDS ON")
     private let scopeStatus = NSTextField(labelWithString: "ALL ACCESSIBLE REPOSITORIES")
     private let previewStatus = NSTextField(labelWithString: "READY TO PLAY")
-    private var pads: [String: SoundPad] = [:]
+    private var pads: [String: [LibraryItem]] = [:]
     private let padGrid = NSStackView()
     private let bankCount = NSTextField(labelWithString: "")
     private var filterButtons: [String: HardwareButton] = [:]
@@ -114,6 +91,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private var repositorySheet: RepositorySheet?
     private var repositoryCatalog: [Repository]?
     private var catalogLoading = false
+    private var connectionVerified = false
+    private var connectionCheckedAt = Date.distantPast
+    private let connectionStatus = NSTextField(labelWithString: "CHECKING ACCESS AND CONNECTIONS…")
     private let queue = DispatchQueue(label: "code-push-tags.commands")
     private let muteQueue = DispatchQueue(label: "code-push-tags.mute", qos: .userInteractive)
     private let githubQueue = DispatchQueue(label: "code-push-tags.github", qos: .userInitiated)
@@ -143,7 +123,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         makeMenus()
         makeWindow()
         refreshSettings()
-        timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.refreshSettings() }
+        timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            self.refreshSettings()
+            if Date().timeIntervalSince(self.connectionCheckedAt) >= 60 { self.refreshRepositoryCatalog() }
+        }
+        refreshRepositoryCatalog()
         showWindow()
     }
 
@@ -334,7 +319,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             return
         }
         layoutStyle = selected
-        rebuildTransport(); refreshSettings()
+        rebuildTransport(); rebuildPads(); refreshSettings()
         if previewSound?.isPlaying == true { animateTransport(for: previewID) }
         for artwork in transportArt.values { artwork.pulse() }
         status.stringValue = "Layout saved on this Mac."
@@ -403,13 +388,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }
         bankCount.font = .monospacedSystemFont(ofSize: 9, weight: .medium)
         bankCount.textColor = .secondaryLabelColor
-        let bank = NSStackView(views: [label("SAMPLE PADS", color: .white.withAlphaComponent(0.65)), bankSpacer, filters, bankCount])
+        let bank = NSStackView(views: [label("SOUND LIBRARY", color: .white.withAlphaComponent(0.65)), bankSpacer, filters, bankCount])
         bank.spacing = 12
         outer.addArrangedSubview(bank)
         bank.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
-        padGrid.orientation = .vertical; padGrid.spacing = 8; padGrid.alignment = .leading
-        let rowCount = (tags.count + 3) / 4
-        padGrid.heightAnchor.constraint(equalToConstant: CGFloat(rowCount * 74 + max(0, rowCount - 1) * 8)).isActive = true
+        padGrid.orientation = .horizontal; padGrid.spacing = 8; padGrid.alignment = .top
+        padGrid.heightAnchor.constraint(equalToConstant: 276).isActive = true
         outer.addArrangedSubview(padGrid)
         rebuildPads()
         scopeStatus.font = .monospacedSystemFont(ofSize: 10, weight: .medium)
@@ -421,6 +405,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         scope.spacing = 10
         outer.addArrangedSubview(scope)
         scope.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
+        connectionStatus.font = .monospacedSystemFont(ofSize: 9, weight: .medium)
+        connectionStatus.textColor = .secondaryLabelColor
+        connectionStatus.lineBreakMode = .byTruncatingTail
+        outer.addArrangedSubview(connectionStatus)
+        connectionStatus.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
         let actions = NSStackView(views: [hardwareButton("ENABLE ON THIS MAC…", action: #selector(enableSetup)),
             hardwareButton("REMOVE SETUP…", action: #selector(removeSetup), color: .secondaryLabelColor),
             hardwareButton("GITHUB SIGN-IN", action: #selector(signIn), color: .secondaryLabelColor),
@@ -454,33 +443,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
                      "branch-outta-here": "BRANCH OUTTA HERE", "dj-khaled-another-one": "ANOTHER ONE",
                      "lego-yoda-death": "LEGO YODA", "lego-break-apart": "LEGO DEATH", "terio-kill-em": "TERIO KILL ’EM",
                      "metal-gear-alert": "METAL GEAR ALERT", "windows-xp-error": "WINDOWS XP", "fahhh": "FAHHH"]
-        for start in stride(from: 0, to: filtered.count, by: 4) {
-            let row = NSStackView(); row.spacing = 8
-            for offset in 0..<4 {
-                let index = start + offset
-                if index < filtered.count {
-                    let tag = filtered[index]
-                    let cases = useCases(tag)
-                    let pad = SoundPad(title: tag.text, target: self, action: #selector(previewPad))
-                    pad.identifier = NSUserInterfaceItemIdentifier(tag.id)
-                    pad.isBordered = false
-                    pad.number = (tags.firstIndex { $0.id == tag.id } ?? index) + 1
-                    pad.label = names[tag.id] ?? tag.text.uppercased()
-                    pad.category = cases.map { $0 == "ci" ? "FAILURE" : $0.uppercased() }.joined(separator: " / ")
-                    pad.accent = cases == ["ci"] ? coral : (cases == ["merge"] ? violet : mint)
-                    pad.playing = previewID == tag.id && previewSound?.isPlaying == true
-                    pad.widthAnchor.constraint(equalToConstant: 250).isActive = true
-                    pad.heightAnchor.constraint(equalToConstant: 74).isActive = true
-                    pads[tag.id] = pad
-                    row.addArrangedSubview(pad)
-                } else {
-                    let blank = NSView()
-                    blank.widthAnchor.constraint(equalToConstant: 250).isActive = true
-                    blank.heightAnchor.constraint(equalToConstant: 74).isActive = true
-                    row.addArrangedSubview(blank)
-                }
+        for (event, title, color) in [("push", "PUSH", mint), ("merge", "MERGE", violet), ("ci", "FAILURE", coral)] {
+            guard soundFilter == "all" || soundFilter == event else { continue }
+            let group = NSStackView(); group.orientation = .vertical; group.alignment = .leading; group.spacing = 8
+            group.widthAnchor.constraint(equalToConstant: 336).isActive = true
+            let entries = tags.filter { useCases($0).contains(event) }
+            group.addArrangedSubview(label("\(title)  /  \(entries.count)", size: 10, color: color))
+            let stack = LibraryStack(); stack.orientation = .vertical; stack.spacing = 6
+            stack.alignment = .leading
+            for tag in entries {
+                let item = LibraryItem(title: tag.text, target: self, action: #selector(previewPad))
+                item.identifier = NSUserInterfaceItemIdentifier(tag.id)
+                item.isBordered = false
+                item.number = (tags.firstIndex { $0.id == tag.id } ?? 0) + 1
+                item.label = names[tag.id] ?? tag.text.uppercased()
+                item.category = title
+                item.accent = color
+                item.cassette = layoutStyle == "boombox"
+                item.playing = previewID == tag.id && previewSound?.isPlaying == true
+                item.widthAnchor.constraint(equalToConstant: 320).isActive = true
+                item.heightAnchor.constraint(equalToConstant: 60).isActive = true
+                pads[tag.id, default: []].append(item)
+                stack.addView(item, in: .top)
             }
-            padGrid.addView(row, in: .top)
+            let scroll = NSScrollView()
+            scroll.drawsBackground = false
+            scroll.hasVerticalScroller = true
+            stack.frame = NSRect(x: 0, y: 0, width: 320, height: max(250, CGFloat(entries.count * 66 - 6)))
+            scroll.documentView = stack
+            scroll.widthAnchor.constraint(equalToConstant: 336).isActive = true
+            scroll.heightAnchor.constraint(equalToConstant: 250).isActive = true
+            group.addArrangedSubview(scroll)
+            padGrid.addArrangedSubview(group)
         }
     }
 
@@ -527,10 +521,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     }
 
     private func perform(_ script: String, _ arguments: [String], on worker: DispatchQueue? = nil, reportOutput: Bool = true,
-                         completion: @escaping (Bool, String) -> Void) {
+                         quiet: Bool = false, completion: @escaping (Bool, String) -> Void) {
         let runtime = kit
         let values = environment
-        status.stringValue = "Working…"
+        if !quiet { status.stringValue = "Working…" }
         (worker ?? queue).async { [weak self] in
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
@@ -551,8 +545,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             } catch { output = error.localizedDescription }
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                self.status.stringValue = !reportOutput && success ? "Repository choices loaded." :
-                    (output.isEmpty ? (success ? "Saved." : "The command failed. Check that Python 3 and GitHub CLI are installed.") : String(output.suffix(700)))
+                if !quiet {
+                    self.status.stringValue = !reportOutput && success ? "Repository choices loaded." :
+                        (output.isEmpty ? (success ? "Saved." : "The command failed. Check that Python 3 and GitHub CLI are installed.") : String(output.suffix(700)))
+                }
                 self.refreshSettings()
                 completion(success, output)
             }
@@ -573,12 +569,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }
         let catalog = repositoryCatalog ?? []
         let sheet = RepositorySheet(repositories: catalog.map { $0.full_name }, organizations: organizationNames(catalog),
-                                    selection: readObject("config.json"), refresh: { [weak self] in self?.refreshRepositoryCatalog() }) { [weak self] args in
+                                    selection: readObject("config.json"), refresh: { [weak self] in self?.refreshRepositoryCatalog() }) { [weak self] args, completion in
             guard let self = self else { return }
-            self.perform("repo_preferences.py", ["set"] + args, reportOutput: false) { [weak self] success, _ in
-                if success { self?.status.stringValue = "Repository and organization choices saved." }
+            self.perform("repo_preferences.py", ["set", "--verify-access"] + args, reportOutput: false) { [weak self] success, output in
+                completion(success, success ? "Access confirmed. Selection saved." : output)
+                if success {
+                    self?.status.stringValue = "Access confirmed. Repository and organization choices saved."
+                    self?.refreshRepositoryCatalog()
+                }
             }
         }
+        sheet.updateConnections(catalog, verified: connectionVerified)
         repositorySheet = sheet
         window.beginSheet(sheet.window) { [weak self, weak sheet] _ in
             sheet?.window.orderOut(nil)
@@ -586,13 +587,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             self?.window.deminiaturize(nil)
             self?.showWindow()
         }
-        if catalogLoading {
-            sheet.setLoading(true)
-        } else if repositoryCatalog == nil {
-            refreshRepositoryCatalog()
-        } else {
-            sheet.setLoading(false, message: "Cached list. Refresh to check GitHub for changes.")
-        }
+        if catalogLoading { sheet.setLoading(true) }
+        else { refreshRepositoryCatalog() }
     }
 
     private func organizationNames(_ catalog: [Repository]) -> [String] {
@@ -602,22 +598,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     private func refreshRepositoryCatalog() {
         guard !catalogLoading else { return }
         catalogLoading = true
+        connectionCheckedAt = Date()
         repositorySheet?.setLoading(true)
-        perform("repo_preferences.py", ["list"], on: githubQueue, reportOutput: false) { [weak self] success, output in
+        perform("repo_preferences.py", ["connections"], on: githubQueue, reportOutput: false, quiet: true) { [weak self] success, output in
             guard let self = self else { return }
             self.catalogLoading = false
             guard success, let data = output.data(using: .utf8),
-                  let catalog = try? JSONDecoder().decode([Repository].self, from: data) else {
-                self.repositorySheet?.setLoading(false, message: "Refresh failed. Check GitHub sign-in and try again.")
+                  let report = try? JSONDecoder().decode(ConnectionReport.self, from: data) else {
+                self.connectionVerified = false
+                self.connectionStatus.stringValue = "ACCESS NOT CONFIRMED · Refresh or check GitHub sign-in"
+                self.repositorySheet?.updateConnections(self.repositoryCatalog ?? [], verified: false)
+                self.repositorySheet?.setLoading(false, message: "Access check failed. Refresh or check GitHub sign-in.")
                 return
             }
+            let catalog = report.repositories
             self.repositoryCatalog = catalog
+            self.connectionVerified = true
+            let live = catalog.filter { $0.connection == "live" }.count
+            let polling = catalog.filter { $0.connection == "polling" }.count
+            let attention = catalog.count - live - polling
+            self.connectionStatus.stringValue = "ACCESS CHECKED · \(live) LIVE / \(polling) POLLING AVAILABLE / \(attention) NEED ATTENTION · 60s when enabled"
+            self.connectionStatus.toolTip = "Checked at " + report.checked_at + ". Counts cover the accessible repository list. Push sounds use the local Git setup."
             if let encoded = try? JSONEncoder().encode(catalog) {
                 try? FileManager.default.createDirectory(at: self.state, withIntermediateDirectories: true, attributes: [.posixPermissions: 0o700])
                 try? encoded.write(to: self.state.appendingPathComponent("repository-catalog.json"), options: .atomic)
             }
             self.repositorySheet?.updateCatalog(repositories: catalog.map { $0.full_name }, organizations: self.organizationNames(catalog))
-            self.repositorySheet?.setLoading(false, message: "Updated from GitHub. Your current choices are unchanged.")
+            self.repositorySheet?.updateConnections(catalog, verified: true)
+            self.repositorySheet?.setLoading(false, message: "Access and connections checked. Polling is the fallback.")
         }
     }
 
@@ -644,7 +652,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         previewSound?.stop()
         previewSound = nil
         previewID = nil
-        for pad in pads.values { pad.playing = false }
+        for item in pads.values.flatMap({ $0 }) { item.playing = false }
         for artwork in transportArt.values { artwork.setRunning(false) }
         previewStatus.stringValue = muted ? "PREVIEW MUTED" : "READY TO PLAY"
     }
@@ -662,8 +670,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         sound.delegate = self
         previewSound = sound
         previewID = identifier
-        pads[identifier]?.playing = true
-        previewStatus.stringValue = "▶  " + (pads[identifier]?.label ?? tag.text.uppercased())
+        pads[identifier]?.forEach { $0.playing = true }
+        previewStatus.stringValue = "▶  " + (pads[identifier]?.first?.label ?? tag.text.uppercased())
         status.stringValue = "Preview: " + tag.text
         if sound.play() { animateTransport(for: identifier) }
         else { stopPreview(); status.stringValue = "The audio clip could not be played." }
@@ -727,7 +735,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }
     }
 
-    @objc private func checkSetup() { invoke("push_tags.py", ["doctor"]) }
+    @objc private func checkSetup() { invoke("push_tags.py", ["doctor"]); refreshRepositoryCatalog() }
 
     @objc private func signIn() {
         let command = "PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin gh auth login --web"
@@ -770,10 +778,14 @@ final class RepositorySheet: NSObject, NSTableViewDataSource, NSTableViewDelegat
     private var repositories: Set<String>
     private var organizations: Set<String>
     private let refresh: () -> Void
-    private let save: ([String]) -> Void
+    private let save: ([String], @escaping (Bool, String) -> Void) -> Void
+    private let saveButton = NSButton(title: "Save selection", target: nil, action: nil)
+    private var saving = false
+    private var connectionRows: [String: Repository] = [:]
+    private var verified = false
 
     init(repositories: [String], organizations: [String], selection: [String: Any], refresh: @escaping () -> Void,
-         save: @escaping ([String]) -> Void) {
+         save: @escaping ([String], @escaping (Bool, String) -> Void) -> Void) {
         self.repositories = Set(selection["repositories"] as? [String] ?? [])
         self.organizations = Set(selection["organizations"] as? [String] ?? [])
         self.refresh = refresh
@@ -824,8 +836,11 @@ final class RepositorySheet: NSObject, NSTableViewDataSource, NSTableViewDelegat
         stack.addArrangedSubview(search)
         search.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         let column = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("repository"))
-        column.width = 580
+        column.width = 380
         table.addTableColumn(column)
+        let connectionColumn = NSTableColumn(identifier: NSUserInterfaceItemIdentifier("connection"))
+        connectionColumn.width = 190
+        table.addTableColumn(connectionColumn)
         table.headerView = nil
         table.rowHeight = 28
         table.dataSource = self
@@ -839,14 +854,15 @@ final class RepositorySheet: NSObject, NSTableViewDataSource, NSTableViewDelegat
         scroll.widthAnchor.constraint(equalTo: stack.widthAnchor).isActive = true
         let cancel = NSButton(title: "Cancel", target: self, action: #selector(close))
         cancel.keyEquivalent = "\u{1b}"
-        let buttons = NSStackView(views: [NSButton(title: "Save selection", target: self, action: #selector(saveSelection)), cancel])
+        saveButton.target = self; saveButton.action = #selector(saveSelection)
+        let buttons = NSStackView(views: [saveButton, cancel])
         buttons.spacing = 8
         stack.addArrangedSubview(buttons)
         updateCatalog(repositories: repositories, organizations: organizations)
     }
 
     func setLoading(_ loading: Bool, message: String = "Refreshing repositories from GitHub…") {
-        refreshButton.isEnabled = !loading
+        refreshButton.isEnabled = !loading && !saving
         refreshButton.title = loading ? "Refreshing…" : "Refresh"
         if loading { progress.startAnimation(nil) } else { progress.stopAnimation(nil) }
         catalogStatus.stringValue = message
@@ -857,6 +873,12 @@ final class RepositorySheet: NSObject, NSTableViewDataSource, NSTableViewDelegat
         let orgNames = Set(organizations).union(self.organizations)
         items = orgNames.sorted().map { Item(kind: "org", name: $0) } + repoNames.sorted().map { Item(kind: "repo", name: $0) }
         filterChanged()
+    }
+
+    func updateConnections(_ catalog: [Repository], verified: Bool) {
+        connectionRows = Dictionary(uniqueKeysWithValues: catalog.map { ($0.full_name.lowercased(), $0) })
+        self.verified = verified
+        table.reloadData()
     }
 
     @objc private func refreshCatalog() { refresh() }
@@ -886,8 +908,21 @@ final class RepositorySheet: NSObject, NSTableViewDataSource, NSTableViewDelegat
     @objc private func saveSelection() {
         let arguments = all.state == .on ? ["--all"] :
             repositories.sorted().flatMap { ["--repo", $0] } + organizations.sorted().flatMap { ["--org", $0] }
-        save(arguments)
-        close()
+        guard !saving else { return }
+        saving = true
+        saveButton.isEnabled = false
+        all.isEnabled = false
+        setLoading(true, message: "Confirming access before saving…")
+        table.reloadData()
+        save(arguments) { [weak self] success, message in
+            guard let self = self else { return }
+            self.saving = false
+            self.saveButton.isEnabled = true
+            self.all.isEnabled = true
+            self.setLoading(false, message: message)
+            self.table.reloadData()
+            if success { self.close() }
+        }
     }
 
     @objc private func close() {
@@ -903,11 +938,34 @@ final class RepositorySheet: NSObject, NSTableViewDataSource, NSTableViewDelegat
 
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
         let item = visible[row]
+        if tableColumn?.identifier.rawValue == "connection" {
+            let field = NSTextField(labelWithString: "")
+            field.font = .systemFont(ofSize: 11)
+            field.lineBreakMode = .byTruncatingTail
+            if !verified {
+                field.stringValue = "Access not confirmed"
+                field.textColor = .secondaryLabelColor
+            } else if item.kind == "org" {
+                let repos = connectionRows.values.filter { $0.organization && $0.full_name.lowercased().hasPrefix(item.name.lowercased() + "/") }
+                let live = repos.filter { $0.connection == "live" }.count
+                field.stringValue = repos.isEmpty ? "Access not confirmed" : "\(live) live / \(repos.count - live) other"
+                field.toolTip = "Organization selection includes only repositories your account can access."
+            } else if let repo = connectionRows[item.name.lowercased()] {
+                switch repo.connection {
+                case "live": field.stringValue = "Live · access confirmed"; field.textColor = mint
+                case "partial": field.stringValue = "Live + polling · verified"; field.textColor = violet
+                case "polling": field.stringValue = "Polling available · verified"
+                default: field.stringValue = "Access not confirmed"; field.textColor = coral
+                }
+                field.toolTip = repo.reason
+            } else { field.stringValue = "Access not confirmed"; field.textColor = coral }
+            return field
+        }
         let button = NSButton(checkboxWithTitle: (item.kind == "org" ? "Organization · " : "Repository · ") + item.name,
                               target: self, action: #selector(toggleItem))
         button.tag = row
         button.state = all.state == .on || (item.kind == "org" ? organizations.contains(item.name) : repositories.contains(item.name)) ? .on : .off
-        button.isEnabled = all.state != .on
+        button.isEnabled = all.state != .on && !saving
         return button
     }
 }

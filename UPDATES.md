@@ -2,13 +2,13 @@
 
 ## Current state
 
-The app is a private local prototype, version 0.1.0 build 2. No public release or coworker invitation was made for this test. Automatic app updates are not implemented.
+The app is a private prototype, version 0.1.0. See `CFBundleVersion` in `macos/Info.plist` for the build number. No public release or coworker invitation was made for this test. Automatic app updates are not implemented.
 
 Decided by: person (Max). Test locally before sharing the app with friends or coworkers. Keep the repository in Max's personal GitHub account.
 
 ## Pilot update method
 
-Use a versioned private GitHub Release with the macOS ZIP attached. Give repository access only to people who want to join. The release notes must state the supported architecture and known limits.
+Use a versioned private GitHub Release with the macOS DMG and ZIP attached. Give repository access only to people who want to join. The release notes must state the supported architecture and known limits. People with repository access can also build the app from source.
 
 This method is the proposed pilot delivery path. A release has not been published yet.
 
@@ -21,20 +21,49 @@ This method is the proposed pilot delivery path. A release has not been publishe
 5. Build the Apple Silicon app with `macos/build_app.py`.
 6. Verify its signature and architecture.
 7. Test previews, mute, repository selection, and close/reopen behavior.
-8. Verify that the ZIP contains no private state or credentials.
-9. Publish the ZIP to an approved private GitHub Release.
+8. Verify that the DMG and ZIP contain no private state or credentials.
+9. Publish the DMG and ZIP to an approved private GitHub Release.
 10. Add the version, changes, limits, and rollback instructions to the release notes.
 
 Follow the applicable build rules. The local prototype build was a specific user-approved exception. It does not change the normal CI rule.
 
 Developer ID signing and notarization are recommended before a wider distribution. The current ad-hoc signature is for the local prototype.
 
+## Install from a DMG
+
+1. Download `Code-Push-Tags-macOS.dmg`.
+2. Open the DMG.
+3. Drag **Code Push Tags.app** to the **Applications** shortcut.
+4. Eject the disk image.
+5. Open the app from Applications.
+6. Select **GitHub sign-in** to use your own account.
+7. Select your repositories and sounds.
+8. Select **Enable on this Mac** when you want automatic sounds.
+
+Installation alone does not enable automatic sounds. The app supports Apple Silicon Macs with macOS 12 or later. It requires Python 3 and GitHub CLI. The current app has an ad-hoc signature. It is not Developer ID signed or notarized. macOS can block a downloaded copy.
+
+The DMG contains the app and a shortcut to `/Applications`. The shortcut does not install the app automatically.
+
+Decided by: person (Max). Supply a DMG for optional installation and retain the source option.
+
+## Build from source
+
+Use your own GitHub account with access to the private repository. Use your own credentials for event checks. Install Python 3, GitHub CLI, and the Xcode Command Line Tools before the build.
+
+```sh
+git clone https://github.com/murbany-lola/code-push-tags.git
+cd code-push-tags
+python3 macos/build_app.py --output dist/local-build
+```
+
+Use a new output folder for each build. The command creates `Code Push Tags.app`, `Code-Push-Tags-macOS.zip`, and `Code-Push-Tags-macOS.dmg`. Follow the DMG installation steps above. The source does not include Max's credentials or private settings.
+
 ## Install an update
 
 1. Turn global mute on.
 2. Quit Code Push Tags from its menu.
-3. Download the new ZIP from the private GitHub Release.
-4. Extract the app.
+3. Download the new DMG or ZIP from the private GitHub Release.
+4. Open the DMG or extract the ZIP.
 5. Replace the old app in the same Applications folder.
 6. Open the updated app.
 7. Select **Check setup**.
