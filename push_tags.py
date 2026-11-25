@@ -248,6 +248,8 @@ def main():
     player = commands.add_parser('play')
     player.add_argument('tag', nargs='?')
     player.add_argument('--event', choices=['any', 'push', 'merge'], default='any')
+    commands.add_parser('off')
+    commands.add_parser('on')
     for name in ('mute', 'unmute', 'poll', 'doctor'):
         commands.add_parser(name)
     preferences = commands.add_parser('configure')
@@ -264,8 +266,8 @@ def main():
         if not play(args.event, args.tag):
             print('No audio played: muted or no matching tag.', file=sys.stderr)
             return 1
-    elif args.command in ('mute', 'unmute'):
-        write_json(state_dir() / 'settings.json', {'muted': args.command == 'mute'})
+    elif args.command in ('mute', 'unmute', 'off', 'on'):
+        write_json(state_dir() / 'settings.json', {'muted': args.command in ('mute', 'off')})
     elif args.command == 'configure':
         settings = config()
         available = tags()

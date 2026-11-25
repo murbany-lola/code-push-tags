@@ -65,3 +65,42 @@ Max selected "Branch outta here!" as the merge sound. It uses the existing manif
 | New prod files | 1 | 1 |
 
 reuse-hunter: pass; no findings. The WAV file decodes. The local merge selection is `branch-outta-here`. The push selection remains `stackaholics`.
+
+## Webhook pilot and global mute
+
+The pilot adds an authenticated GitHub forwarding connection and a signed loopback receiver. The existing polling state prevents duplicate playback. Global on/off commands use the existing mute setting.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 262 | 276 |
+| Test net LOC | 379 | 430 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 2 | 2 |
+
+- reuse-hunter: pass; no findings.
+- loc-minimizer: minor; unused import. Applied: removed the import.
+- path-correctness: major; second start removed an active hook. Applied: hold a listener lock before hook cleanup. Round 2 passed.
+- release-safety: major; same active-hook deletion. Applied through the same lock change. Round 2 passed.
+
+Validation: 17 receiver tests, 13 listener tests, and 2 global mute tests passed. Python and shell syntax checks passed. Tests use controlled time. A real personal-repository squash merge reached the receiver with polling paused. A second signed delivery returned `recorded: false`. Polling was restored. The temporary target branch and test hook were removed. No Lola Labs hook was changed.
+
+The gate reported four secret-related source lines. These lines read an environment secret or construct Keychain commands. No secret values were added to the repository.
+
+The webhook forwarding service is for development and testing. It supports one forwarding session per target. Coworker rollout remains outside this one-person pilot. Max later approved the temporary organization-hook exception. The connection is active; see PILOT.md.
+
+## Another one option
+
+The optional DJ Khaled clip uses the existing manifest, player, and selection commands. The active push and merge settings remain unchanged.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 7 | 7 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+reuse-hunter: pass; no findings. The manifest ID is unique. The WAV decodes and lasts 0.83 seconds. No runtime code changed.

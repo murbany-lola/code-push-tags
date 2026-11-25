@@ -67,6 +67,16 @@ Existing Git functions and aliases are not replaced automatically.
 
 ## Mute or remove
 
+One global mute controls all sounds across all repositories and both event types. Open a new terminal once after updating the shell helper.
+
+```sh
+push-tags off
+push-tags on
+```
+
+The original `mute` and `unmute` commands work too. The mute setting persists until you turn sounds on. Muted merges are recorded and are not replayed later.
+
+
 ```sh
 python3 push_tags.py mute
 python3 push_tags.py unmute
@@ -125,3 +135,53 @@ Sources: [Fenzo guide](https://fenzo.ai/courses/drop-your-producer-tag-every-git
 The original Wheezy clip is a community upload from [Myinstants](https://www.myinstants.com/en/search/?name=wheezy+outta+here). It was converted from MP3 to WAV. This repository grants no rights to that recording.
 
 Max approved the "Branch outta here!" parody as his merge sound. It was generated with TagMyBeat from the Wheezy reference voice after Max confirmed authorization to clone that voice.
+
+## GitHub webhook pilot
+
+The optional webhook pilot receives merge events while GitHub is closed in your browser. It uses GitHub's authenticated CLI forwarding service. It opens no public port on the Mac.
+
+GitHub documents this forwarding service for development and testing only. Only one forwarding session can use a repository or organization at a time. The pilot is for one person. A shared service is required before multiple coworkers can use the same organization listener.
+
+Install the official extension:
+
+```sh
+gh extension install cli/gh-webhook --pin v0.2.0
+```
+
+Start the personal-repository pilot:
+
+```sh
+python3 listen.py --repo murbany-lola/code-push-tags
+```
+
+Keep the process running. The Mac must remain awake and online. Stop it with Control-C. The command removes its saved test webhook on normal shutdown. After an interrupted run, it removes that saved hook before starting again. It does not remove an unidentified existing forwarding hook.
+
+The receiver uses port 18769 by default. Choose another port if needed:
+
+```sh
+python3 listen.py --repo murbany-lola/code-push-tags --port 18770
+```
+
+The token needs hook administration access for the selected target. The command creates one GitHub test hook. A separate signing secret is stored in Keychain under `code-push-tags.webhook`. No webhook secret is written into the repository.
+
+The receiver confirms each merge through GitHub. It only plays events for PRs that the authenticated person authored or merged. Squash merges use this same path. It shares saved events with the polling watcher, so a duplicate delivery does not play again.
+
+The installed polling watcher remains available. It can recover merges after a forwarding interruption. The webhook pilot does not replace or disable it.
+
+An organization pilot uses `--org lola-labs` after the required organization-change approval. No organization hook is enabled by installing or cloning this repository.
+
+Validation: a real squash merge on temporary branches in the personal repository reached the receiver while polling was paused. A second signed delivery returned `recorded: false`. Polling was then restored. The test did not change `main`.
+
+Source: [GitHub CLI webhook forwarding](https://docs.github.com/en/webhooks/testing-and-troubleshooting-webhooks/using-the-github-cli-to-forward-webhooks-for-testing).
+
+## Another one
+
+The optional DJ Khaled clip uses the existing player and settings:
+
+```sh
+push-tags play dj-khaled-another-one
+push-tags configure --push-tag dj-khaled-another-one
+push-tags configure --merge-tag dj-khaled-another-one
+```
+
+Adding the clip does not change an existing sound selection. The [source recording](https://www.myinstants.com/en/search/?name=dj+khaled+another+one) is a community upload converted from MP3. This repository grants no rights to that recording.
