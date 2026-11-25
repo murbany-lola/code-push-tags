@@ -2,15 +2,15 @@
 
 ## Current state
 
-The source is on `feat/macos-app-ci-sounds` in Max's private personal repository. The installed local prototype is `~/Applications/Code Push Tags.app`. Version 0.1.0, build 2 targets Apple Silicon and macOS 12 or later.
+The source is on `feat/connection-status` in Max's private personal repository. The installed local prototype is `~/Applications/Code Push Tags.app`. Version 0.1.0, build 9 targets Apple Silicon and macOS 12 or later.
 
-Max remains the pilot user. No invitations or release publication were performed by this agent. Intel support and automatic updates are deferred.
+Max remains the pilot user. No invitations or release publication were performed by this agent. Intel support and automatic app-code updates are deferred. Shared audio updates are implemented.
 
 The existing checkout-based polling watcher remains installed. The native app uses the same local preferences. Opening the app does not replace that installation.
 
 ## Current behavior
 
-The app has Push and Merge decks, a center master strip, and sample pads. Use-case groups help people browse. Every clip remains available for every event. A new preview stops the previous preview. Master mute stops the preview and suppresses all event sounds.
+The app has saved DJ and boombox layouts. Its library has Push, Merge, and Failure groups. Items look like record sleeves or cassette cases. Double-click an item to preview it. Single clicks do not play or highlight it. Card outlines are removed. Every clip remains available for every event. A new preview stops the previous preview. Master mute stops the preview and suppresses all event sounds.
 
 People can select individual repositories, whole organizations, all accessible repositories, or none. Repository and organization selections form a union. Their GitHub account still controls private access. Previewing does not depend on repository selection.
 
@@ -71,3 +71,13 @@ The downstream polling scan uses a one-day checkpoint overlap. It discovers repo
 No new failing deployment was triggered for testing. A shared authenticated webhook service is future work before a multi-person webhook rollout.
 
 See MAC_APP.md for controls, UPDATES.md for update procedures, and SOUNDS.md for recordings and use-case metadata.
+
+## Current package and review
+
+[PR 4](https://github.com/murbany-lola/code-push-tags/pull/4) contains access checks, connection status, grouped sound cards, DMG packaging, and shared audio updates. The private [draft release](https://github.com/murbany-lola/code-push-tags/releases/tag/untagged-6e8d111571fc876d934e) contains the DMG and ZIP. It is not published.
+
+Merge the PR before sharing the automatic-sync bundle. The shared library reads `main`. The original Wheezy clip remains in the older shared manifest until this removal reaches `main`. The new bundle has 10 clips and retains Branch outta here. Select Refresh Library after merge.
+
+The installed prototype is build 9. Native checks verified double-click playback and a silent single click with no card outline. The DMG mounted read-only and its app signature passed. The image was ejected. The app remains ad-hoc signed and is not notarized. See REVIEW.md for test results and limits.
+
+Decided by: person (Max). Supply a DMG and source build option. Keep repository audio updates separate from app-code updates. Confirm repository access and use existing connected listeners with polling as the fallback.
