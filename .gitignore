@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+raw/
+original-tags/
+custom-tags/
+*.zip
+audio/*.wav
+!audio/stackaholics.wav
+build_tags.py

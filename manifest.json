@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "tags": [
+    {
+      "id": "stackaholics",
+      "text": "Stackaholics! We build different!",
+      "file": "audio/stackaholics.wav",
+      "event": "any"
+    }
+  ]
+}
