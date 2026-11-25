@@ -2,15 +2,15 @@
 
 ## Current state
 
-The app is a private prototype, version 0.1.0. See `CFBundleVersion` in `macos/Info.plist` for the build number. No public release or coworker invitation was made for this test. Automatic app updates are not implemented.
+Version 0.1.0 is published with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Automatic app-code updates are not implemented.
 
-Decided by: person (Max). Test locally before sharing the app with friends or coworkers. Keep the repository in Max's personal GitHub account.
+Decided by: person (Max). Test locally before sharing. Keep the repository in his personal GitHub account and make it public for downloads.
 
 ## Pilot update method
 
-Use a versioned private GitHub Release with the macOS DMG and ZIP attached. Give repository access only to people who want to join. The release notes must state the supported architecture and known limits. People with repository access can also build the app from source.
+Use a versioned GitHub Release with the macOS DMG and ZIP attached. The release notes must state the supported architecture and known limits. Public downloads do not require an invitation. People can also build the app from source.
 
-This method is the proposed pilot delivery path. A release has not been published yet.
+Version 0.1.0 uses this delivery method. Installation and automatic sounds remain optional.
 
 ## Prepare a release
 
@@ -22,7 +22,7 @@ This method is the proposed pilot delivery path. A release has not been publishe
 6. Verify its signature and architecture.
 7. Test previews, mute, repository selection, and close/reopen behavior.
 8. Verify that the DMG and ZIP contain no private state or credentials.
-9. Publish the DMG and ZIP to an approved private GitHub Release.
+9. Publish the DMG and ZIP to an approved GitHub Release.
 10. Add the version, changes, limits, and rollback instructions to the release notes.
 
 Follow the applicable build rules. The local prototype build was a specific user-approved exception. It does not change the normal CI rule.
@@ -48,7 +48,7 @@ Decided by: person (Max). Supply a DMG for optional installation and retain the 
 
 ## Build from source
 
-Use your own GitHub account with access to the private repository. Use your own credentials for event checks. Install Python 3, GitHub CLI, and the Xcode Command Line Tools before the build.
+The source is public. Use your own GitHub credentials for event checks. Install Python 3, GitHub CLI, and the Xcode Command Line Tools before the build.
 
 ```sh
 git clone https://github.com/murbany-lola/code-push-tags.git
@@ -62,7 +62,7 @@ Use a new output folder for each build. The command creates `Code Push Tags.app`
 
 1. Turn global mute on.
 2. Quit Code Push Tags from its menu.
-3. Download the new DMG or ZIP from the private GitHub Release.
+3. Download the new DMG or ZIP from the GitHub Release.
 4. Open the DMG or extract the ZIP.
 5. Replace the old app in the same Applications folder.
 6. Open the updated app.

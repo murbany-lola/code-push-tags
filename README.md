@@ -1,8 +1,12 @@
 # Code Push Tags
 
-**Joining the pilot? Start with the [coworker setup guide](TEAM_README.md).**
+**Start with [INSTALL.md](INSTALL.md).** Download the app, choose your sounds, and enable it when ready.
 
-The [Apple Silicon app prototype](MAC_APP.md) adds local previews, event choices, global mute, and repository or organization selection. See [updates](UPDATES.md) and the [sound library](SOUNDS.md).
+[Download the DMG](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.dmg) · [Download the ZIP](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.zip) · [Watch the trailer](docs/code-push-tags-trailer.mp4)
+
+[![Watch the app trailer](docs/trailer-poster.png)](docs/code-push-tags-trailer.mp4)
+
+The [Apple Silicon app](MAC_APP.md) has DJ and boombox layouts, local previews, event choices, global mute, and repository or organization selection. See [updates](UPDATES.md) and the [sound library](SOUNDS.md).
 
 Optional local sounds for successful Git pushes, GitHub PR merges, and attributed GitHub Actions failures on macOS.
 
@@ -21,7 +25,6 @@ The merge clips are included. Select one when you want to change the merge sound
 ```sh
 python3 push_tags.py configure --merge-tag stackaholics-welcome-to-main
 python3 push_tags.py configure --merge-tag stackaholics-thats-a-wrap
-python3 push_tags.py configure --merge-tag branch-outta-here
 python3 push_tags.py configure --merge-tag branch-outta-here
 ```
 
@@ -71,7 +74,7 @@ Existing Git functions and aliases are not replaced automatically.
 
 ## Mute or remove
 
-One global mute controls all sounds across all repositories and both event types. Open a new terminal once after updating the shell helper.
+One global mute controls all sounds across all repositories and all event types. Open a new terminal once after updating the shell helper.
 
 ```sh
 push-tags off

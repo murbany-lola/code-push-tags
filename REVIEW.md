@@ -206,3 +206,19 @@ A native mouse-event check confirmed that one click did not play the first clip 
 The final DMG mounted read-only. Its app signature passed. It contains 10 bundled clips, retains Branch outta here, excludes the original Wheezy clip, and includes the shared-library helper. It contains no bytecode cache. The image was ejected. The running prototype can still show the older shared manifest until this PR reaches `main`; select Refresh Library after merge.
 
 The documentation uses short, direct instructions. A complete ASD-STE100 dictionary check was not performed.
+
+## Public downloads, install guide, and trailer
+
+Decided by: person (Max). Make this personal repository public. Add an install guide and a short app trailer. Record only the app and exclude sensitive content.
+
+Before the visibility change, a text-pattern check covered 18 reachable Git revisions. It found no matches for the selected credential formats. No committed credential-file names were found. The repository had no Actions runs. This was a limited pattern check, not a complete security audit. The existing third-party audio source notes remain. Redistribution permission for community uploads was not established.
+
+Anonymous GitHub requests confirmed public repository and release access. An anonymous DMG download matched the published SHA-256 digest. No collaborators were invited.
+
+INSTALL.md covers app and source installation, dependencies, opt-in, GitHub access, sound controls, updates, background playback, and removal. Existing delivery documents now use the public release links. A complete ASD-STE100 dictionary check was not performed.
+
+The trailer is 29.5 seconds at 1440 × 1080. It uses three app-window recordings, title cards, and three selected WAV clips. It contains no microphone or system-audio capture. Sampled frames were checked for a full app view, real preview playback, and the absence of desktop, browser, or private repository names. Raw recordings remain outside the repository. Audio decoded without clipping.
+
+A real merge-notification sound played while Slack remained in front. Focus did not change during the observation. Recording controls, rather than the notification path, brought the app forward during trailer work. The previous foreground app and saved layout/mute state were restored after recording.
+
+The pre-merge gate skipped review because the changes contain documentation and generated media only. Prod net LOC, test net LOC, new prod files, tables, columns, and data resources remain zero for this change. No app code changed.

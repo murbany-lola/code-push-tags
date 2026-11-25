@@ -31,7 +31,7 @@ The original-voice Terio clip uses the final 2.3 seconds of the alternate record
 
 ## Shared library updates
 
-The app reads the shared library from this repository's `main` branch. Each person needs GitHub access to this private repository. The app uses that person's GitHub credentials.
+The app reads the shared library from this repository's `main` branch. The shared audio is public. No repository invitation is required. The app uses each person's own GitHub credentials for its API requests.
 
 The app checks at startup and once per hour. The enabled background watcher also checks once per hour. Select **Refresh Library** to check immediately. The app keeps a complete local copy for offline use. A failed or incomplete download keeps the previous library. New sounds appear without a new DMG. App code updates still need a new app bundle.
 
@@ -49,4 +49,4 @@ Keep existing IDs stable so saved sound selections continue to work. A new WAV f
 
 Double-click a library item to preview it. A single click does not play audio or highlight the item. The CUE buttons still play on one click.
 
-Max requested removal of the original Wheezy clip. `branch-outta-here` remains. The removal must reach `main` before an automatic shared-library refresh can receive it.
+Max requested removal of the original Wheezy clip. The removal is on `main`. `branch-outta-here` remains.

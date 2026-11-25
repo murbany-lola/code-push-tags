@@ -1,12 +1,12 @@
 # Code Push Tags: coworker setup
 
-A [native Apple Silicon app prototype](MAC_APP.md) is available for local testing. Team distribution is pending that test. The terminal setup below remains available.
+For the Apple Silicon app, start with [INSTALL.md](INSTALL.md). Version 0.1.0 is available as a DMG or ZIP. The terminal setup below is an alternative.
 
-Play a short audio tag after your successful Git pushes and GitHub PR merges. Installation is optional. Each person controls their own Mac and sound choices.
+Play a short audio tag after your successful Git pushes, GitHub PR merges, and related GitHub Actions failures. Installation is optional. Each person controls their own Mac and sound choices.
 
 ## Before you start
 
-Use macOS, zsh, Python 3.9 or later, Git, and GitHub CLI (`gh`). Ask Max for read access to this private repository. Use your own GitHub account.
+Use macOS, zsh, Python 3.9 or later, Git, and GitHub CLI (`gh`). The source and downloads are public. Use your own GitHub account for event checks.
 
 The standard setup uses local Git commands and GitHub polling. You do not need an organization webhook, webhook administration access, or a voice-generation account.
 
@@ -173,8 +173,8 @@ Private configuration and logs are in `~/Library/Application Support/Code Push T
 
 ## Optional app or source
 
-The prototype builder supplies `Code-Push-Tags-macOS.dmg`. Open it and drag the app to Applications. Installation does not enable automatic sounds. Use your own GitHub account, select your repositories, then enable setup when ready. The current app requires Apple Silicon, Python 3, and GitHub CLI. It has an ad-hoc signature and is not notarized. macOS can block a downloaded copy.
+The [published release](https://github.com/murbany-lola/code-push-tags/releases/latest) supplies `Code-Push-Tags-macOS.dmg`. Open it and drag the app to Applications. Installation does not enable automatic sounds. Use your own GitHub account, select your repositories, then enable setup when ready. The current app requires Apple Silicon, Python 3, and GitHub CLI. It has an ad-hoc signature and is not notarized. macOS can block a downloaded copy.
 
-You can also build from the private repository source. Repository access must be granted separately. See [installation and source builds](UPDATES.md). No credentials or private settings are included in the bundle or source.
+You can also build from the public repository source. No repository invitation is required. See [installation and source builds](UPDATES.md). No credentials or private settings are included in the bundle or source.
 
 The repository window shows verified live connections and available polling. Access is checked again before a selection is saved. See [app controls](MAC_APP.md).
