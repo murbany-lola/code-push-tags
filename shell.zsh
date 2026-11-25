@@ -6,6 +6,9 @@ fi
 typeset -g CODE_PUSH_TAGS_LOADED=1
 typeset -g CODE_PUSH_TAGS_ROOT=${${(%):-%N}:A:h}
 typeset -g CODE_PUSH_TAGS_PYTHON=${commands[python3]}
+push-tags() {
+  "$CODE_PUSH_TAGS_PYTHON" "$CODE_PUSH_TAGS_ROOT/push_tags.py" "$@"
+}
 git() {
   local -a scan
   scan=("$@")
