@@ -1,0 +1,23 @@
+STORY TEXT
+
+my code has a producer tag now 🎛️
+
+made a little Mac app for my friends.
+push / merge / build breaks / PR comments
+
+github.com/murbany-lola/code-push-tags
+
+
+GROUP CHAT / SLACK
+
+You like to code? Do you like notifications? Are you a mixtape millennial?
+
+I made Code Push Tags: a deeply unnecessary Mac app that plays producer tags when you push or merge, LEGO death when CI breaks, and AOL mail when someone comments on your PR.
+
+Pick your sounds and repos. Everyone opts in on their own Mac. Global mute included because i do have limits.
+
+Apple Silicon preview, public source + download:
+https://github.com/murbany-lola/code-push-tags
+
+Reel:
+https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.0/instagram-reel.mp4

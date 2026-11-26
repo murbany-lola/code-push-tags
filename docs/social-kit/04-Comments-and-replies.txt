@@ -1,0 +1,44 @@
+FIRST COMMENT TO LEAVE ON YOUR POST
+
+For my fellow mixtape millennials: source, Mac download, and setup are here 🎛️
+https://github.com/murbany-lola/code-push-tags
+
+Apple Silicon preview for now. Everyone opts in on their own Mac. Nobody is being involuntarily enrolled in my DJ career.
+
+
+OPTIONAL FOLLOW-UP COMMENT
+
+The LEGO death sound when the build fails is unfortunately doing a lot for morale.
+
+
+REPLY: “How do I get it?”
+
+Start here: https://github.com/murbany-lola/code-push-tags/blob/main/INSTALL.md — pick your sounds and repos in the app 🎛️
+
+REPLY: “Does everyone hear this?”
+
+Only your own Mac. Your teammates have to opt into this nonsense themselves.
+
+REPLY: “Can I turn it off?”
+
+One global mute. Even i knew there needed to be an emergency exit.
+
+REPLY: “Can I choose the sounds?”
+
+Yep. Push, merge, CI failure, and PR comments have separate sound choices. Double-click a sound card to preview it.
+
+REPLY: “Does it work with private repos?”
+
+It uses your own GitHub access. Pick the repos you want it to follow in the app.
+
+REPLY: “Does it work on Windows / Intel?”
+
+Apple Silicon Mac preview for now. My DJ career has a limited tour schedule.
+
+REPLY: “Why did you make this?”
+
+Because git was missing a mixtape era and apparently that was my problem to solve.
+
+REPLY: “Can I add sounds?”
+
+Source is public. The shared sound library updates separately from the app. Suggestions are extremely welcome and probably dangerous.
