@@ -1,6 +1,8 @@
 STORY TEXT
 
-my code has a producer tag now 🎛️
+i make dumb stuff. this time my code has a producer tag.
+
+one time for the runtime 🎛️
 
 made a little Mac app for my friends.
 push / merge / build breaks / PR comments
@@ -20,4 +22,4 @@ Apple Silicon preview, public source + download:
 https://github.com/murbany-lola/code-push-tags
 
 Reel:
-https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.0/instagram-reel.mp4
+https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/instagram-reel.mp4

@@ -1,5 +1,7 @@
 # Sound library
 
+**Lossless or GTFO.** Bring your own WAV catalog. All audio stays outside the platform code license.
+
 Each event can use any listed clip. Preview and select clips locally in the app. Existing sound choices are not changed when a new clip is added.
 
 | ID | Clip | Source |

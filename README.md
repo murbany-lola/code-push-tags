@@ -2,15 +2,15 @@
 
 <img src="macos/assets/code-push-tags-logo.png" alt="Code Push Tags cassette DJ" width="180" />
 
-**Millennial in the streets, Gen Z in the commits.**
+**One time for the runtime.**
 
 **Start with [INSTALL.md](INSTALL.md).** Download the app, choose your sounds, and enable it when ready.
 
 [Download the DMG](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.dmg) · [Download the ZIP](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.zip) · [Watch the Instagram reel](docs/instagram-reel.mp4) · [App walkthrough](docs/code-push-tags-trailer.mp4)
 
-<a href="https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.0/instagram-reel.mp4"><img src="docs/instagram-reel-cover.png" alt="I gave my commits a producer tag. Watch the 24-second reel." width="300" /></a>
+<a href="https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/instagram-reel.mp4"><img src="docs/instagram-reel-cover.png" alt="I gave my commits a producer tag. Watch the 24-second reel." width="300" /></a>
 
-[Download the social kit](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.0/Code-Push-Tags-Social-Kit.zip) · [Captions and replies](docs/social-kit) · [Download the reel](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.0/instagram-reel.mp4) · 24 seconds · Vertical 1080 × 1920 · App-only footage and sound previews.
+[Download the social kit](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/Code-Push-Tags-Social-Kit.zip) · [Captions and replies](docs/social-kit) · [Download the reel](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/instagram-reel.mp4) · 24 seconds · Vertical 1080 × 1920 · App-only footage and sound previews.
 
 The [Apple Silicon app](MAC_APP.md) has DJ and boombox layouts, local previews, event choices, global mute, and repository or organization selection. See [updates](UPDATES.md) and the [sound library](SOUNDS.md).
 
@@ -178,3 +178,11 @@ An organization pilot uses `--org lola-labs` after the required organization-cha
 Validation: a real squash merge on temporary branches in the personal repository reached the receiver while polling was paused. A second signed delivery returned `recorded: false`. Polling was then restored. The test did not change `main`.
 
 Source: [GitHub CLI webhook forwarding](https://docs.github.com/en/webhooks/testing-and-troubleshooting-webhooks/using-the-github-cli-to-forward-webhooks-for-testing).
+
+## Fork and customize
+
+[Fork this repository](https://github.com/murbany-lola/code-push-tags/fork), then follow [FORKING.md](FORKING.md). Use your own GitHub account. Each person chooses their own sounds and repositories.
+
+**WAVs only. Lossless or GTFO.**
+
+The original app code uses the [MIT license](LICENSE). Media assets have a separate [license scope](NOTICE.md). See [sound sources](SOUNDS.md).

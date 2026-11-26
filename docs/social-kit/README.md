@@ -1,6 +1,6 @@
 # Social posting kit
 
-[Download the complete ZIP](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.0/Code-Push-Tags-Social-Kit.zip). It contains the video, cover, captions, comments, replies, and posting steps.
+[Download the complete ZIP](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/Code-Push-Tags-Social-Kit.zip). It contains the video, cover, captions, comments, replies, and posting steps.
 
 1. Upload `01-Upload.mp4`.
 2. Select `02-Cover.png` as the cover.

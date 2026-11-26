@@ -307,3 +307,22 @@ Reuse, LOC, and path reviewers reported no actionable findings. Parent inspectio
 Focused checks: 88 connection, routing, CI, and comment tests passed. Receiver and sound library checks passed. The listener checks passed. The native Apple Silicon preview build passed. No full test suite was run. A complete ASD-STE100 dictionary check was not performed.
 
 The installed 0.3.0 app shows 12 clips. The COMMENTS filter shows the AOL clip. The comment sheet shows the saved default. Turning the checkbox off and on saves the selected state. CUE starts the preview. The public v0.3.0 release contains DMG and ZIP downloads. The local live listener confirms all five subscriptions, including all three comment event types. No real PR comment was created for this check.
+
+## Version 0.3.1: tagline and fork guide
+
+Decided by: person (Max). Use "One time for the runtime." as the product tagline. Add "Lossless or GTFO" by the sound library. Use MIT for the original platform code and technical documentation. Keep all audio and other media outside that code license.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 21 | 21 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+The gate counts LICENSE as a new production file. Reuse and path reviewers reported no actionable findings. The changes add strings, documentation, and license files to the existing bundle list. The native Apple Silicon build passed. The installed app shows both new strings without overlap. Sound, mute, and layout settings have the same file hashes after replacement. LICENSE and NOTICE.md are in the bundle. No new unit tests were required for these string and packaging changes.
+
+FORKING.md gives the source installation and build commands. A fork can retain the original update sources or change the two source constants before release. The current WAV catalog uses a GitHub manifest. Arbitrary local folder import is not implemented. Media permissions remain separate from the MIT code license.
+
+The reel outro and social kit use the new tagline. The feature crop excludes the old tagline. The sound sections and audio cues are unchanged. A complete ASD-STE100 dictionary check was not performed.

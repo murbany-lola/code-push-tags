@@ -11,7 +11,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME = ('push_tags.py', 'install.py', 'shell.zsh', 'manifest.json', 'ci_events.py',
-           'repo_preferences.py', 'sound_library.py', 'app_updates.py', 'comment_events.py')
+           'repo_preferences.py', 'sound_library.py', 'app_updates.py', 'comment_events.py', 'LICENSE', 'NOTICE.md')
 LOGO = 'macos/assets/code-push-tags-logo.png'
 
 

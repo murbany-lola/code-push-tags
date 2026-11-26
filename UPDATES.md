@@ -122,3 +122,9 @@ Healthy connected repositories use webhook events. Scheduled checks exclude thos
 The optional source listener reconnects after a connected-session drop. A recorded gap causes a recovery check. Recovery remains pending when a check fails, the merge lock is busy, or GitHub's account-feed interval has not elapsed.
 
 See INSTALL.md for repository selection and TEAM_README.md for optional live setup. The source listener still requires a running terminal and does not start automatically after a reboot.
+
+## Version 0.3.1
+
+The app header, README, reel, and social kit use the tagline "One time for the runtime."
+
+Decided by: person (Max). Use the new tagline for Code Push Tags.

@@ -1,19 +1,13 @@
 MAIN CAPTION
 
-You like to code? Do you like notifications? Are you a mixtape millennial?
+i make dumb stuff. this time i gave my git pushes producer tags.
 
-I gave my git pushes producer tags because apparently version control needed a mixtape era.
+one time for the runtime 🎛️
 
-Push: we build different.
-Merge: branch outta here.
-Build breaks: LEGO death.
-PR comment: you've got mail.
+wav only. lossless or gtfo.
 
-Made a deeply unnecessary Mac app for my friends. Pick your sounds, pick your repos, mute it whenever.
+made a little Mac app for my friends. pick your sounds and repos. global mute included because i have some self-awareness.
 
-Millennial in the streets. Gen Z in the commits.
-
-Code Push Tags 🎛️
 github.com/murbany-lola/code-push-tags
 
 

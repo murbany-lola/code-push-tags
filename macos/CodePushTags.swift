@@ -402,7 +402,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         ])
         let wordmark = NSTextField(labelWithString: "PUSH TAGS")
         wordmark.font = .systemFont(ofSize: 27, weight: .heavy); wordmark.textColor = .white
-        let brand = NSStackView(views: [wordmark, label("Millennial in the streets, Gen Z in the commits.", size: 9)])
+        let brand = NSStackView(views: [wordmark, label("One time for the runtime.", size: 9)])
         brand.orientation = .vertical; brand.alignment = .leading; brand.spacing = 3
         let space = NSView(); space.setContentHuggingPriority(.defaultLow, for: .horizontal)
         previewStatus.font = .monospacedSystemFont(ofSize: 10, weight: .medium)
@@ -456,7 +456,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         libraryRefresh.isBordered = false
         libraryRefresh.widthAnchor.constraint(equalToConstant: 132).isActive = true
         libraryRefresh.heightAnchor.constraint(equalToConstant: 24).isActive = true
-        let bank = NSStackView(views: [label("SOUND LIBRARY", color: .white.withAlphaComponent(0.65)), bankSpacer, libraryRefresh, filters, bankCount])
+        let bank = NSStackView(views: [label("SOUND LIBRARY / LOSSLESS OR GTFO", color: .white.withAlphaComponent(0.65)), bankSpacer, libraryRefresh, filters, bankCount])
         bank.spacing = 12
         outer.addArrangedSubview(bank)
         bank.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
@@ -735,7 +735,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
                 self.tags = library.tags
                 self.rebuildTransport(); self.rebuildPads(); self.refreshSettings()
             }
-            self.libraryRefresh.toolTip = report.error ?? "Shared audio from murbany-lola/code-push-tags on main. Double-click an item to preview."
+            self.libraryRefresh.toolTip = report.error ?? "Shared sound library. Double-click an item to preview."
             if force { self.status.stringValue = report.error ?? "Shared sound library is up to date." }
         }
     }
