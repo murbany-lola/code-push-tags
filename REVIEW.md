@@ -374,3 +374,7 @@ Reuse-hunter: no findings. LOC-minimizer: no cuts. Path-correctness: minor, wron
 Native checks used separate settings. Producer searches for `pierre` and `TAY KEITH` each returned one clip. The existing Failure filter retained six clips. CUE playback, mini/full switching, and mute controls worked. A real background `push` playback lit the LED with **London on da Track / PUSH** while Finder stayed in front. Global mute blocked background playback and did not write a new playback record. The fixed preview label was checked in the final build.
 
 Screenshots show only the app: [producer search](docs/producer-search.png) and [compact player](docs/mini-player.png). Version 0.4.0 includes the producer catalog from the 0.3.2 source checkpoint. A complete ASD-STE100 dictionary check was not performed.
+
+The installed app is version 0.4.0, build 20. Its shared cache has all 17 clips. The installed window exposes the search field and shows **17 / 17**. Hash checks confirmed that the user's sound configuration, global mute setting, and layout setting did not change. The final 18 sound-library tests also passed with the playback signal in place.
+
+[Version 0.4.0](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.4.0) contains the DMG and ZIP. GitHub asset sizes and SHA-256 digests match the local build. No GitHub Actions runs are configured for this repository. Validation used the focused local checks and the authorized native app build.
