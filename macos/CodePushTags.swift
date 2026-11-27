@@ -115,6 +115,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
     private let bankCount = NSTextField(labelWithString: "")
     private var filterButtons: [String: HardwareButton] = [:]
     private var soundFilter = "all"
+    private var expandedProducers: Set<String> = []
+    private var collapsedSearchGroups: Set<String> = []
+    private var producerScrolls: [String: NSScrollView] = [:]
     private let transportHost = NSStackView()
     private var transportArt: [String: TransportArtwork] = [:]
     private var layoutStyle = "dj"
@@ -499,11 +502,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
         bank.spacing = 12
         outer.addArrangedSubview(bank)
         bank.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
-        padGrid.orientation = .horizontal; padGrid.spacing = 8; padGrid.alignment = .top
+        padGrid.orientation = .horizontal; padGrid.spacing = 12; padGrid.alignment = .top
         libraryScroll.drawsBackground = false
-        libraryScroll.hasHorizontalScroller = true
+        libraryScroll.hasHorizontalScroller = false
         libraryScroll.hasVerticalScroller = false
         libraryScroll.documentView = padGrid
+        padGrid.autoresizingMask = [.width]
         libraryScroll.heightAnchor.constraint(equalToConstant: 276).isActive = true
         outer.addArrangedSubview(libraryScroll)
         libraryScroll.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
@@ -555,7 +559,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
     }
 
     func controlTextDidChange(_ notification: Notification) {
-        if notification.object as? NSSearchField === soundSearch { rebuildPads() }
+        if notification.object as? NSSearchField === soundSearch {
+            collapsedSearchGroups.removeAll()
+            rebuildPads()
+        }
     }
 
     @objc private func filterSounds(_ sender: NSButton) {
@@ -563,7 +570,40 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
         rebuildPads()
     }
 
-    private func rebuildPads() {
+    @objc private func toggleSoundGroup(_ sender: NSButton) {
+        guard let key = sender.identifier?.rawValue else { return }
+        if searchKey(soundSearch.stringValue).isEmpty {
+            if !expandedProducers.insert(key).inserted { expandedProducers.remove(key) }
+        } else {
+            if !collapsedSearchGroups.insert(key).inserted { collapsedSearchGroups.remove(key) }
+        }
+        rebuildPads(resetScroll: false)
+    }
+
+    private func groupHeader(_ title: String, detail: String, key: String, expanded: Bool,
+                             category: Bool = false, color: NSColor) -> SoundGroupHeader {
+        let heading = SoundGroupHeader(frame: .zero)
+        heading.title = title
+        heading.detail = detail
+        heading.identifier = NSUserInterfaceItemIdentifier(key)
+        heading.target = category ? nil : self
+        heading.action = category ? nil : #selector(toggleSoundGroup)
+        heading.setButtonType(.pushOnPushOff)
+        heading.state = expanded ? .on : .off
+        heading.expanded = expanded
+        heading.isCategory = category
+        heading.canExpand = !category
+        heading.isEnabled = !category
+        heading.cassette = layoutStyle == "boombox"
+        heading.accent = color
+        heading.setAccessibilityLabel((category ? "" : expanded ? "Collapse " : "Expand ") + title + " / " + detail)
+        heading.heightAnchor.constraint(equalToConstant: category ? 52 : 44).isActive = true
+        return heading
+    }
+
+    private func rebuildPads(resetScroll: Bool = true) {
+        let oldOrigins = resetScroll ? [:] : producerScrolls.mapValues { $0.contentView.bounds.origin }
+        producerScrolls.removeAll()
         for view in padGrid.arrangedSubviews { padGrid.removeArrangedSubview(view); view.removeFromSuperview() }
         pads.removeAll()
         for (key, button) in filterButtons { button.state = key == soundFilter ? .on : .off; button.needsDisplay = true }
@@ -577,49 +617,77 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
                      "stackaholics-thats-a-wrap": "THAT’S A WRAP", "branch-outta-here": "BRANCH OUTTA HERE", "dj-khaled-another-one": "ANOTHER ONE",
                      "lego-yoda-death": "LEGO YODA", "lego-break-apart": "LEGO DEATH", "terio-kill-em": "TERIO KILL ’EM",
                      "metal-gear-alert": "METAL GEAR ALERT", "windows-xp-error": "WINDOWS XP", "fahhh": "FAHHH"]
-        let groups = producerGroups(filtered)
-        let colors = [mint, violet, amber, coral]
-        for (index, producer) in groups.enumerated() {
-            let title = producer.name.uppercased()
-            let entries = producer.tags
-            let color = colors[index % colors.count]
-            let group = NSStackView(); group.orientation = .vertical; group.alignment = .leading; group.spacing = 8
-            group.widthAnchor.constraint(equalToConstant: 336).isActive = true
-            group.addArrangedSubview(label("\(title)  /  \(entries.count)", size: 10, color: color))
-            let stack = LibraryStack(); stack.orientation = .vertical; stack.spacing = 6
-            stack.alignment = .leading
-            for tag in entries {
-                let item = LibraryItem(title: tag.text, target: self, action: #selector(previewPad))
-                item.identifier = NSUserInterfaceItemIdentifier(tag.id)
-                item.isBordered = false
-                item.focusRingType = .none
-                item.toolTip = "Double-click to preview " + tag.text
-                item.number = (tags.firstIndex { $0.id == tag.id } ?? 0) + 1
-                item.label = names[tag.id] ?? tag.text.uppercased()
-                item.category = title
-                item.accent = color
-                item.cassette = layoutStyle == "boombox"
-                item.playing = previewID == tag.id && previewSound?.isPlaying == true
-                item.widthAnchor.constraint(equalToConstant: 320).isActive = true
-                item.heightAnchor.constraint(equalToConstant: 60).isActive = true
-                pads[tag.id, default: []].append(item)
-                stack.addView(item, in: .top)
-            }
-            let scroll = NSScrollView()
+        window.contentView?.layoutSubtreeIfNeeded()
+        let availableWidth = libraryScroll.contentSize.width
+        let columnWidth = soundFilter == "all" ? (availableWidth - 36) / 4 : min(336, availableWidth)
+        let contentWidth = columnWidth - 16
+        for (event, categoryTitle, color) in [("push", "Push", mint), ("merge", "Merge", violet),
+                                               ("ci", "Failure", coral), ("comment", "Comments", amber)] {
+            guard soundFilter == "all" || soundFilter == event else { continue }
+            let categoryTags = filtered.filter { useCases($0).contains(event) }
+            let category = NSStackView(); category.orientation = .vertical; category.alignment = .leading; category.spacing = 6
+            padGrid.addArrangedSubview(category)
+            category.widthAnchor.constraint(equalToConstant: columnWidth).isActive = true
+            let categoryHeading = groupHeader(categoryTitle, detail: "\(categoryTags.count) \(categoryTags.count == 1 ? "sound" : "sounds")",
+                                              key: "category:" + event, expanded: true, category: true, color: color)
+            category.addArrangedSubview(categoryHeading)
+            categoryHeading.widthAnchor.constraint(equalTo: category.widthAnchor).isActive = true
+            let scroll = NSScrollView(frame: NSRect(x: 0, y: 0, width: columnWidth, height: 218))
             scroll.drawsBackground = false
+            scroll.hasHorizontalScroller = false
             scroll.hasVerticalScroller = true
-            stack.frame = NSRect(x: 0, y: 0, width: 320, height: max(250, CGFloat(entries.count * 66 - 6)))
-            scroll.documentView = stack
-            scroll.widthAnchor.constraint(equalToConstant: 336).isActive = true
-            scroll.heightAnchor.constraint(equalToConstant: 250).isActive = true
-            group.addArrangedSubview(scroll)
-            padGrid.addView(group, in: .leading)
+            scroll.autohidesScrollers = true
+            let producers = LibraryStack(); producers.orientation = .vertical; producers.alignment = .leading; producers.spacing = 6
+            producers.frame = NSRect(x: 0, y: 0, width: contentWidth, height: 0)
+            producers.autoresizingMask = [.width]
+            scroll.documentView = producers
+            category.addArrangedSubview(scroll)
+            scroll.widthAnchor.constraint(equalTo: category.widthAnchor).isActive = true
+            scroll.heightAnchor.constraint(equalToConstant: 218).isActive = true
+            producerScrolls[event] = scroll
+            for producer in producerGroups(categoryTags) {
+                let producerKey = "producer:" + event + ":" + producer.name
+                let expanded = query.isEmpty ? expandedProducers.contains(producerKey) : !collapsedSearchGroups.contains(producerKey)
+                let group = NSStackView(); group.orientation = .vertical; group.alignment = .leading; group.spacing = 6
+                producers.addArrangedSubview(group)
+                group.widthAnchor.constraint(equalToConstant: contentWidth).isActive = true
+                let heading = groupHeader(producer.name, detail: "\(producer.tags.count) \(producer.tags.count == 1 ? "sound" : "sounds")",
+                                          key: producerKey, expanded: expanded, color: color)
+                group.addArrangedSubview(heading)
+                heading.widthAnchor.constraint(equalTo: group.widthAnchor).isActive = true
+                guard expanded else { continue }
+                let stack = LibraryStack(); stack.orientation = .vertical; stack.spacing = 6
+                stack.alignment = .leading
+                for tag in producer.tags {
+                    let item = LibraryItem(title: tag.text, target: self, action: #selector(previewPad))
+                    item.identifier = NSUserInterfaceItemIdentifier(tag.id)
+                    item.isBordered = false
+                    item.focusRingType = .none
+                    item.toolTip = "Double-click to preview " + tag.text
+                    item.number = (tags.firstIndex { $0.id == tag.id } ?? 0) + 1
+                    item.label = names[tag.id] ?? tag.text.uppercased()
+                    item.category = producer.name.uppercased()
+                    item.accent = color
+                    item.cassette = layoutStyle == "boombox"
+                    item.playing = previewID == tag.id && previewSound?.isPlaying == true
+                    item.widthAnchor.constraint(equalToConstant: contentWidth).isActive = true
+                    item.heightAnchor.constraint(equalToConstant: 60).isActive = true
+                    pads[tag.id, default: []].append(item)
+                    stack.addView(item, in: .top)
+                }
+                group.addArrangedSubview(stack)
+            }
+            if categoryTags.isEmpty { producers.addArrangedSubview(label("NO MATCHES", size: 10)) }
         }
-        let columns = groups.count
-        if filtered.isEmpty { padGrid.addView(label("NO MATCHING SOUNDS", size: 11), in: .leading) }
-        padGrid.frame = NSRect(x: 0, y: 0, width: max(1024, columns * 336 + (columns - 1) * 8), height: 276)
-        libraryScroll.contentView.scroll(to: .zero)
-        libraryScroll.reflectScrolledClipView(libraryScroll.contentView)
+        padGrid.setFrameSize(NSSize(width: availableWidth, height: 276))
+        window.contentView?.layoutSubtreeIfNeeded()
+        for (event, scroll) in producerScrolls {
+            guard let document = scroll.documentView as? NSStackView else { continue }
+            document.setFrameSize(NSSize(width: contentWidth, height: document.fittingSize.height))
+            let offset = min(oldOrigins[event]?.y ?? 0, max(0, document.frame.height - scroll.contentSize.height))
+            scroll.contentView.scroll(to: NSPoint(x: 0, y: offset))
+            scroll.reflectScrolledClipView(scroll.contentView)
+        }
     }
 
     private func readObject(_ name: String) -> [String: Any] {

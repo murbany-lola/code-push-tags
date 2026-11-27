@@ -19,7 +19,7 @@ Each event can use any listed clip. Preview and select clips locally in the app.
 | `aol-youve-got-mail` | Sound effects | You've got mail — AOL recording (1.045 s) | [Myinstants](https://www.myinstants.com/en/instant/youve-got-mail/) · [Downloaded audio](https://www.myinstants.com/media/sounds/yougotmail.mp3) |
 | `gta-mission-failed` | Sound effects | GTA V mission failed — first 4.000 s, with a 0.2 s end fade | [Voicemod Tuna](https://tuna.voicemod.net/sound/2c033143-ad5c-41de-9794-ef9f6954d044) · [Downloaded audio](https://content-storage.voicemod.net/794ea110da830fe4227f4ddadf295da0918ed9da1919c044bdafd5286a7aee7d) |
 | `functions-on-the-stack` | London on da Track | We got functions on the stack. (2.247 s) | TagMyBeat; [reference](https://www.youtube.com/watch?v=Ryjly_husOU). |
-| `tay-keith-ship-features` | Tay Keith | Tay Keith, ship these features out! (5.799 s) | TagMyBeat; [reference](https://www.myinstants.com/media/sounds/tay-keith-tag.mp3). |
+| `tay-keith-ship-features` | Tay Keith | Tay Keith, ship these features out! (3.140 s) | TagMyBeat; silence removed from the MP3-to-WAV conversion; [reference](https://www.myinstants.com/media/sounds/tay-keith-tag.mp3). |
 | `run-that-test-turbo` | Turbo | Run that test, Turbo! (1.881 s) | TagMyBeat; [reference](https://www.myinstants.com/en/instant/run-that-back-turbo-82927/). |
 | `git-made-another-one` | Jetsonmade | Oh Lord, Git just made another one! (3.239 s) | TagMyBeat; [reference](https://www.myinstants.com/en/instant/dababy-jetson-made-another-one-27477/). |
 | `yo-pr` | Pi’erre Bourne | Yo, P R, you wanna get merged here? (2.743 s) | TagMyBeat; [reference](https://www.myinstants.com/media/sounds/yo-pierre-you-wanna-come-out-here-original-tag.mp3). |

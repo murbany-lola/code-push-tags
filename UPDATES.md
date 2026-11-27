@@ -2,7 +2,7 @@
 
 ## Current state
 
-Version 0.4.0 is the current preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
+Version 0.4.1 is the current preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
 
 Decided by: person (Max). Test locally before sharing. Keep the repository in his personal GitHub account and make it public for downloads.
 
@@ -150,3 +150,13 @@ Select **MINI** to open the compact floating player. Its pixel LED display anima
 The display uses the clip's expected duration. It does not measure the audio device output. Background indicators require the updated playback runtime. Existing source installations use the new runtime on their next scheduled check. Restart a separately running live listener after updating its source. Closing the compact window keeps installed listeners running.
 
 Decided by: person (Max). Add producer search and a compact player with a pixel LED indicator.
+
+## Version 0.4.1
+
+All shows separate Push, Merge, Failure, and Comments columns. Producer sections stack vertically inside each event column. Select a producer header to expand or collapse its clips. Each column has a vertical scrollbar. All four columns fit the window.
+
+Producer sections start closed. Search opens matching producers. Event filters remain available. Section choices stay in memory for the current app session. DJ mode uses record-stack headers. Boombox mode uses cassette-stack headers.
+
+The README shows app-only screenshots of both layouts and the mini-player LED display.
+
+Decided by: person (Max). Keep events in separate columns. Group producers vertically within each event. Add expandable producer headers with distinct record and cassette artwork. Add clear screenshots to the repository.

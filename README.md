@@ -14,13 +14,23 @@
 
 The [Apple Silicon app](MAC_APP.md) has DJ and boombox layouts, local previews, event choices, global mute, and repository or organization selection. See [updates](UPDATES.md) and the [sound library](SOUNDS.md).
 
+| DJ decks · record stacks | Boombox · cassette stacks |
+| --- | --- |
+| [![DJ layout with event columns and expandable producer record stacks](docs/library-event-columns-records.png)](docs/library-event-columns-records.png) | [![Boombox layout with event columns and expandable producer cassette stacks](docs/library-event-columns-cassettes.png)](docs/library-event-columns-cassettes.png) |
+
+Each event has its own column. Expand a producer to see its sounds. Search finds producer names and clip titles.
+
+<a href="docs/mini-player.png"><img src="docs/mini-player.png" alt="Mini player with animated pixel LED bars, clip name, producer, and global mute" width="460" /></a>
+
+**Mini player:** pixel LED bars show sound activity. The animation uses the clip's expected duration. Select **FULL PLAYER** to return to the main window. These screenshots show only the app.
+
 Optional local sounds for successful Git pushes, GitHub PR merges, and attributed GitHub Actions failures on macOS.
 
 Choose a sound for each event from the shared library. Each person installs the tool on their own Mac. There is no team broadcast or automatic enrollment.
 
 ## Choose sounds
 
-Use the app's Push, Merge, and Failure groups to browse the library. Double-click a sound to preview it. Use each event's menu to save its sound assignment.
+Use the app's Push, Merge, Failure, and Comments columns to browse the library. Expand a producer to see its clips. Double-click a sound to preview it. Use each event's menu to save its sound assignment.
 
 The terminal commands can also list and preview sounds:
 

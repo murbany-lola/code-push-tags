@@ -378,3 +378,26 @@ Screenshots show only the app: [producer search](docs/producer-search.png) and [
 The installed app is version 0.4.0, build 20. Its shared cache has all 17 clips. The installed window exposes the search field and shows **17 / 17**. Hash checks confirmed that the user's sound configuration, global mute setting, and layout setting did not change. The final 18 sound-library tests also passed with the playback signal in place.
 
 [Version 0.4.0](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.4.0) contains the DMG and ZIP. GitHub asset sizes and SHA-256 digests match the local build. No GitHub Actions runs are configured for this repository. Validation used the focused local checks and the authorized native app build.
+
+## Version 0.4.1: event columns and producer stacks
+
+Decided by: person (Max). Keep Push, Merge, Failure, and Comments in separate columns. Stack expandable producer groups vertically inside each event. Use record artwork for DJ mode and cassette artwork for boombox mode. Add clear app-only screenshots to the README. Shorten the Tay Keith clip.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 178 | 178 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 0 | 0 |
+
+Reuse-hunter: minor, duplicate text renderer; applied. Cards and headers share one file-scope text renderer with the same default alignment. Final reuse and path reviews reported no remaining findings. No blocker or major finding required a second review round.
+
+Native checks confirmed four 247-point event columns in All. Each producer list has a vertical scrollbar when required. The outer library has no scrollbar. Event headings remain in place while producers scroll. Expanding a producer at a nonzero offset kept its header position. Expansion in Push did not expand the same producer in Merge. A specific Failure filter showed one 336-point column. A Pi’erre search kept all four event columns and showed the matching clip in Merge. Empty columns showed NO MATCHES. Both layouts displayed the correct stack artwork. Existing sound cards and preview IDs remain in use.
+
+Swift typechecking, the final Apple Silicon build, ad-hoc signature verification, and ZIP inspection passed. The final build is version 0.4.1, build 24. No unit tests were added for this display change. The audio edit removed only exact-zero samples: 5.799 seconds became 3.140 seconds. Audible samples, phrase, speed, sample rate, and channel count stayed the same. The final bundle contains the shortened WAV.
+
+The README shows [DJ event columns](docs/library-event-columns-records.png), [boombox event columns](docs/library-event-columns-cassettes.png), and the existing [mini-player LED display](docs/mini-player.png). All images show only the app. The local preview pack also uses the shortened Tay Keith WAV. Original audio exports remain in the local source folder and preview pack's original-exports directory.
+
+A complete ASD-STE100 dictionary check was not performed.
