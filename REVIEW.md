@@ -403,3 +403,20 @@ The README shows [DJ event columns](docs/library-event-columns-records.png), [bo
 A complete ASD-STE100 dictionary check was not performed.
 
 The installed app and shared cache were checked after replacement. Version 0.4.1, build 24 shows four event columns and no outer scrollbar. The shared cache has 17 clips and the 3.140-second Tay Keith WAV. Preference hashes confirmed that sound assignments, global mute, and layout settings stayed the same. The published [DMG and ZIP](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.4.1) match local sizes and SHA-256 hashes.
+
+## Version 0.4.2: plain event headings
+
+Decided by: person (Max). Make the broad event categories clear without using bundle cells. Keep the artwork on expandable producer groups.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 2 | 2 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 0 | 0 |
+
+Path-correctness: no findings. Plain labels, counts, and separators replace the static event cards. Unused category-card branches were removed. The producer lists gained 23 points of vertical space. No playback, search, or saved-choice code changed.
+
+Swift typechecking and the Apple Silicon build passed. Native checks showed four event labels as static text, no event checkbox cells, four 247-point producer lists, and no outer scrollbar. Producer expansion worked in boombox mode. The README uses current app-only [DJ](docs/library-clean-event-headings-records.png) and [boombox](docs/library-clean-event-headings-cassettes.png) screenshots. No unit tests were added for this display change. A complete ASD-STE100 dictionary check was not performed.

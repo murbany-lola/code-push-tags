@@ -2,7 +2,7 @@
 
 ## Current state
 
-Version 0.4.1 is the current preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
+Version 0.4.2 is the current preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
 
 Decided by: person (Max). Test locally before sharing. Keep the repository in his personal GitHub account and make it public for downloads.
 
@@ -160,3 +160,9 @@ Producer sections start closed. Search opens matching producers. Event filters r
 The README shows app-only screenshots of both layouts and the mini-player LED display.
 
 Decided by: person (Max). Keep events in separate columns. Group producers vertically within each event. Add expandable producer headers with distinct record and cassette artwork. Add clear screenshots to the repository.
+
+## Version 0.4.2
+
+Event columns use plain labels, counts, and thin dividers. The event labels do not use record or cassette cards. Expandable producer groups retain their artwork. More vertical space is available for the sound library.
+
+Decided by: person (Max). Make the event categories clear without giving them their own bundle cells.

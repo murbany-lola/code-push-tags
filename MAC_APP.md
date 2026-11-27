@@ -28,7 +28,7 @@ Browse sounds with **All**, **Push**, **Merge**, **Failure**, and **Comments**. 
 
 Use **Search producers or sounds** to find a producer or clip title. Search keeps the selected event filter.
 
-All shows four event columns: Push, Merge, Failure, and Comments. Producer sections form a vertical list inside each column. Select a producer header to show or hide its clips. Producer sections start closed. Search opens matching producers. The app keeps section choices during the current session. Each event column has its own vertical scrollbar. DJ mode uses record-stack headers. Boombox mode uses cassette-stack headers. No sideways scrolling is required.
+All shows four event columns: Push, Merge, Failure, and Comments. Producer sections form a vertical list inside each column. Select a producer header to show or hide its clips. Producer sections start closed. Search opens matching producers. The app keeps section choices during the current session. Each event column has a plain heading, a sound count, a divider, and its own vertical scrollbar. DJ mode uses record-stack headers. Boombox mode uses cassette-stack headers. No sideways scrolling is required.
 
 Select **MINI** for the compact floating player. The pixel LED display shows local previews and background sound launches. Playback updates do not bring the app forward. **FULL PLAYER** restores the main window. The compact mute button uses the same global setting. The indicator uses the expected clip duration. It does not confirm audio device output. Closing the window keeps installed listeners running.
 

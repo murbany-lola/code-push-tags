@@ -16,7 +16,7 @@ The [Apple Silicon app](MAC_APP.md) has DJ and boombox layouts, local previews, 
 
 | DJ decks · record stacks | Boombox · cassette stacks |
 | --- | --- |
-| [![DJ layout with event columns and expandable producer record stacks](docs/library-event-columns-records.png)](docs/library-event-columns-records.png) | [![Boombox layout with event columns and expandable producer cassette stacks](docs/library-event-columns-cassettes.png)](docs/library-event-columns-cassettes.png) |
+| [![DJ layout with event columns and expandable producer record stacks](docs/library-clean-event-headings-records.png)](docs/library-clean-event-headings-records.png) | [![Boombox layout with event columns and expandable producer cassette stacks](docs/library-clean-event-headings-cassettes.png)](docs/library-clean-event-headings-cassettes.png) |
 
 Each event has its own column. Expand a producer to see its sounds. Search finds producer names and clip titles.
 

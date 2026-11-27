@@ -108,16 +108,14 @@ final class SoundGroupHeader: NSButton {
     var accent = NSColor(srgbRed: 0.54, green: 0.96, blue: 0.69, alpha: 1) { didSet { needsDisplay = true } }
     var expanded = false { didSet { needsDisplay = true } }
     var detail = "" { didSet { needsDisplay = true } }
-    var isCategory = false { didSet { needsDisplay = true } }
-    var canExpand = true { didSet { needsDisplay = true } }
 
     override func draw(_ dirtyRect: NSRect) {
         let face = bounds.insetBy(dx: 1, dy: 2)
         let shell = NSBezierPath(roundedRect: face, xRadius: 6, yRadius: 6)
-        let shade: CGFloat = isCategory ? 0.15 : 0.11
+        let shade: CGFloat = 0.11
         NSGradient(starting: NSColor(white: shade + (isHighlighted ? 0.07 : 0), alpha: 1),
                    ending: NSColor(white: shade - 0.035, alpha: 1))?.draw(in: shell, angle: 90)
-        if canExpand && expanded {
+        if expanded {
             accent.withAlphaComponent(0.6).setFill()
             NSRect(x: face.minX + 3, y: face.minY + 8, width: 2, height: face.height - 16).fill()
         }
@@ -127,24 +125,23 @@ final class SoundGroupHeader: NSButton {
 
         if compact {
             let titleX = face.minX + 64
-            let width = max(0, face.maxX - titleX - (canExpand ? 25 : 9))
-            drawLibraryText(isCategory ? title.uppercased() : title,
+            let width = max(0, face.maxX - titleX - 25)
+            drawLibraryText(title,
                      in: NSRect(x: titleX, y: face.midY + 1, width: width, height: 16),
-                     size: isCategory ? 11 : 10, color: .white, weight: isCategory ? .bold : .semibold)
+                     size: 11, color: .white, weight: .semibold)
             drawLibraryText(detail, in: NSRect(x: titleX, y: face.midY - 13, width: width, height: 13),
                      size: 8, color: accent.withAlphaComponent(0.85))
         } else {
             let detailWidth = min(180, max(80, face.width * 0.24))
-            let detailX = face.maxX - detailWidth - (canExpand ? 35 : 13)
+            let detailX = face.maxX - detailWidth - 35
             let titleX = face.minX + 76
-            drawLibraryText(isCategory ? title.uppercased() : title,
+            drawLibraryText(title,
                      in: NSRect(x: titleX, y: face.midY - 8, width: max(0, detailX - titleX - 12), height: 18),
-                     size: isCategory ? 12 : 11, color: .white, weight: isCategory ? .bold : .semibold)
+                     size: 11, color: .white, weight: .semibold)
             drawLibraryText(detail, in: NSRect(x: detailX, y: face.midY - 6, width: detailWidth, height: 14),
                      size: 9, color: accent.withAlphaComponent(0.85), alignment: .right)
         }
 
-        guard canExpand else { return }
         let center = NSPoint(x: face.maxX - 18, y: face.midY)
         let disclosure = NSBezierPath()
         if expanded {

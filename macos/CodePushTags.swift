@@ -581,23 +581,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
     }
 
     private func groupHeader(_ title: String, detail: String, key: String, expanded: Bool,
-                             category: Bool = false, color: NSColor) -> SoundGroupHeader {
+                             color: NSColor) -> SoundGroupHeader {
         let heading = SoundGroupHeader(frame: .zero)
         heading.title = title
         heading.detail = detail
         heading.identifier = NSUserInterfaceItemIdentifier(key)
-        heading.target = category ? nil : self
-        heading.action = category ? nil : #selector(toggleSoundGroup)
+        heading.target = self
+        heading.action = #selector(toggleSoundGroup)
         heading.setButtonType(.pushOnPushOff)
         heading.state = expanded ? .on : .off
         heading.expanded = expanded
-        heading.isCategory = category
-        heading.canExpand = !category
-        heading.isEnabled = !category
         heading.cassette = layoutStyle == "boombox"
         heading.accent = color
-        heading.setAccessibilityLabel((category ? "" : expanded ? "Collapse " : "Expand ") + title + " / " + detail)
-        heading.heightAnchor.constraint(equalToConstant: category ? 52 : 44).isActive = true
+        heading.setAccessibilityLabel((expanded ? "Collapse " : "Expand ") + title + " / " + detail)
+        heading.heightAnchor.constraint(equalToConstant: 44).isActive = true
         return heading
     }
 
@@ -628,11 +625,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
             let category = NSStackView(); category.orientation = .vertical; category.alignment = .leading; category.spacing = 6
             padGrid.addArrangedSubview(category)
             category.widthAnchor.constraint(equalToConstant: columnWidth).isActive = true
-            let categoryHeading = groupHeader(categoryTitle, detail: "\(categoryTags.count) \(categoryTags.count == 1 ? "sound" : "sounds")",
-                                              key: "category:" + event, expanded: true, category: true, color: color)
+            let title = label(categoryTitle.uppercased(), size: 12, color: color)
+            title.font = .monospacedSystemFont(ofSize: 12, weight: .bold)
+            let count = label("\(categoryTags.count) \(categoryTags.count == 1 ? "sound" : "sounds")", size: 9)
+            let spacer = NSView(); spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            let categoryHeading = NSStackView(views: [title, spacer, count])
+            categoryHeading.heightAnchor.constraint(equalToConstant: 22).isActive = true
             category.addArrangedSubview(categoryHeading)
             categoryHeading.widthAnchor.constraint(equalTo: category.widthAnchor).isActive = true
-            let scroll = NSScrollView(frame: NSRect(x: 0, y: 0, width: columnWidth, height: 218))
+            let divider = NSBox(); divider.boxType = .separator
+            category.addArrangedSubview(divider)
+            divider.widthAnchor.constraint(equalTo: category.widthAnchor).isActive = true
+            divider.heightAnchor.constraint(equalToConstant: 1).isActive = true
+            let scroll = NSScrollView(frame: NSRect(x: 0, y: 0, width: columnWidth, height: 241))
             scroll.drawsBackground = false
             scroll.hasHorizontalScroller = false
             scroll.hasVerticalScroller = true
@@ -643,7 +648,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSea
             scroll.documentView = producers
             category.addArrangedSubview(scroll)
             scroll.widthAnchor.constraint(equalTo: category.widthAnchor).isActive = true
-            scroll.heightAnchor.constraint(equalToConstant: 218).isActive = true
+            scroll.heightAnchor.constraint(equalToConstant: 241).isActive = true
             producerScrolls[event] = scroll
             for producer in producerGroups(categoryTags) {
                 let producerKey = "producer:" + event + ":" + producer.name
