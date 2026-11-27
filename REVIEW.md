@@ -401,3 +401,5 @@ Swift typechecking, the final Apple Silicon build, ad-hoc signature verification
 The README shows [DJ event columns](docs/library-event-columns-records.png), [boombox event columns](docs/library-event-columns-cassettes.png), and the existing [mini-player LED display](docs/mini-player.png). All images show only the app. The local preview pack also uses the shortened Tay Keith WAV. Original audio exports remain in the local source folder and preview pack's original-exports directory.
 
 A complete ASD-STE100 dictionary check was not performed.
+
+The installed app and shared cache were checked after replacement. Version 0.4.1, build 24 shows four event columns and no outer scrollbar. The shared cache has 17 clips and the 3.140-second Tay Keith WAV. Preference hashes confirmed that sound assignments, global mute, and layout settings stayed the same. The published [DMG and ZIP](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.4.1) match local sizes and SHA-256 hashes.
