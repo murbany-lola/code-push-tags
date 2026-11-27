@@ -436,3 +436,5 @@ The final MP4 decoded successfully. Its audio peak was 0.780, below full scale. 
 The posting ZIP contains seven files. Integrity checks passed, and its video hash matches the repository video. No social account was used to publish a post. A complete ASD-STE100 dictionary check was not performed.
 
 The pre-merge gate skipped code review because the change contains only documentation and media. Production and test net LOC are both zero. No unit tests or app build were required for this refresh.
+
+The refreshed reel, cover, and posting ZIP are uploaded to the existing version 0.4.2 release. GitHub sizes and SHA-256 digests match the local files. The two app downloads also retain their verified hashes. The canonical local pack is `~/Downloads/Code-Push-Tags-Social-Kit.zip`.
