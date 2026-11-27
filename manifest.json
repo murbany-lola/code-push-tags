@@ -8,7 +8,8 @@
       "event": "any",
       "use_cases": [
         "push"
-      ]
+      ],
+      "producer": "Trap-A-Holics"
     },
     {
       "id": "stackaholics-welcome-to-main",
@@ -17,7 +18,8 @@
       "event": "merge",
       "use_cases": [
         "merge"
-      ]
+      ],
+      "producer": "Trap-A-Holics"
     },
     {
       "id": "stackaholics-thats-a-wrap",
@@ -26,7 +28,8 @@
       "event": "merge",
       "use_cases": [
         "merge"
-      ]
+      ],
+      "producer": "Trap-A-Holics"
     },
     {
       "id": "branch-outta-here",
@@ -35,7 +38,8 @@
       "event": "merge",
       "use_cases": [
         "merge"
-      ]
+      ],
+      "producer": "Wheezy"
     },
     {
       "id": "dj-khaled-another-one",
@@ -45,7 +49,8 @@
       "use_cases": [
         "push",
         "merge"
-      ]
+      ],
+      "producer": "DJ Khaled"
     },
     {
       "id": "terio-kill-em",
@@ -55,7 +60,8 @@
       "use_cases": [
         "push",
         "merge"
-      ]
+      ],
+      "producer": "Terio"
     },
     {
       "id": "metal-gear-alert",
@@ -113,6 +119,59 @@
       "use_cases": [
         "ci"
       ]
+    },
+    {
+      "id": "functions-on-the-stack",
+      "text": "We got functions on the stack.",
+      "file": "audio/functions-on-the-stack.wav",
+      "event": "any",
+      "use_cases": [
+        "push",
+        "merge"
+      ],
+      "producer": "London on da Track"
+    },
+    {
+      "id": "tay-keith-ship-features",
+      "text": "Tay Keith, ship these features out!",
+      "file": "audio/tay-keith-ship-features.wav",
+      "event": "any",
+      "use_cases": [
+        "push",
+        "merge"
+      ],
+      "producer": "Tay Keith"
+    },
+    {
+      "id": "run-that-test-turbo",
+      "text": "Run that test, Turbo!",
+      "file": "audio/run-that-test-turbo.wav",
+      "event": "ci",
+      "use_cases": [
+        "ci"
+      ],
+      "producer": "Turbo"
+    },
+    {
+      "id": "git-made-another-one",
+      "text": "Oh Lord, Git just made another one!",
+      "file": "audio/git-made-another-one.wav",
+      "event": "any",
+      "use_cases": [
+        "push",
+        "merge"
+      ],
+      "producer": "Jetsonmade"
+    },
+    {
+      "id": "yo-pr",
+      "text": "Yo, P R, you wanna get merged here?",
+      "file": "audio/yo-pr.wav",
+      "event": "any",
+      "use_cases": [
+        "merge"
+      ],
+      "producer": "Pi\u2019erre Bourne"
     }
   ]
 }

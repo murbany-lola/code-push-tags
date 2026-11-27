@@ -2,7 +2,7 @@
 
 ## Current state
 
-Version 0.2.1 is the new public preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
+Version 0.3.2 is the current preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
 
 Decided by: person (Max). Test locally before sharing. Keep the repository in his personal GitHub account and make it public for downloads.
 
@@ -128,3 +128,13 @@ See INSTALL.md for repository selection and TEAM_README.md for optional live set
 The app header, README, reel, and social kit use the tagline "One time for the runtime."
 
 Decided by: person (Max). Use the new tagline for Code Push Tags.
+
+## Version 0.3.2
+
+The library adds five producer-tag parodies: London on da Track, Tay Keith, Turbo, Jetsonmade, and Pi’erre Bourne. Metro and Murda takes are excluded.
+
+Library columns and sound menus use producer groups. Event filters remain available. Both display styles use these groups. Clips without a producer appear under **Sound effects**. Existing sound IDs and saved choices remain the same.
+
+The audio can reach older apps through **Refresh Library**. Producer groups require version 0.3.2. The new WAV files are conversions from TagMyBeat MP3 exports. Conversion does not improve source quality. Audio remains outside the MIT code license.
+
+Decided by: person (Max). Add the completed parodies and organize sounds by producer.

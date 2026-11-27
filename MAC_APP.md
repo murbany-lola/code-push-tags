@@ -24,7 +24,7 @@ Opening the app does not install automatic sounds. The app preserves an existing
 
 Only one manual preview plays at a time. Starting another preview stops the previous sound. Global mute stops an active preview. Select the DJ or boombox layout to change the library appearance.
 
-Browse sounds with **All**, **Push**, **Merge**, and **Failure**. These groups do not restrict routing. Each event can use any listed sound. Choices save locally. The app saves the displayed choices before a new installation.
+Browse sounds with **All**, **Push**, **Merge**, **Failure**, and **Comments**. Each filter shows sounds in producer groups. Record stacks and cassette stacks use the same groups. Clips without a producer appear under **Sound effects**. Sound menus also use producer groups. These groups do not restrict event selection. Each event can use any listed sound. Choices save locally. The app saves the displayed choices before a new installation.
 
 Turn global mute off before previewing a clip. Global mute also suppresses manual playback.
 

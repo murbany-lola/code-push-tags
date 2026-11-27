@@ -326,3 +326,28 @@ The gate counts LICENSE as a new production file. Reuse and path reviewers repor
 FORKING.md gives the source installation and build commands. A fork can retain the original update sources or change the two source constants before release. The current WAV catalog uses a GitHub manifest. Arbitrary local folder import is not implemented. Media permissions remain separate from the MIT code license.
 
 The reel outro and social kit use the new tagline. The feature crop excludes the old tagline. The sound sections and audio cues are unchanged. A complete ASD-STE100 dictionary check was not performed.
+
+## Version 0.3.2: producer groups and five parodies
+
+Decided by: person (Max). Add the completed London, Tay Keith, Turbo, Jetsonmade, and Pi’erre parodies. Group sounds by producer. Exclude Metro, Murda, Just Blaze, Conductor, and Jahlil from this batch.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 85 | 85 |
+| Test net LOC | 0 | 0 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 5 | 5 |
+
+The five new production files are WAV files. The existing manifest supplies optional producer metadata. One helper groups the library columns and sound menus. The existing shared-library update path remains in use.
+
+Reuse-hunter: no findings. Path-correctness: no findings. No second review round was required.
+
+Swift typechecking and 18 focused sound-library tests passed. All 17 manifest paths resolve. The five new WAV files match the downloaded conversions. Their source MP3 hashes match the generation record. They are mono, 44.1 kHz, 16-bit PCM. They are conversions from MP3 exports. Conversion does not improve source quality.
+
+The Apple Silicon build, ad-hoc signature check, and archive inspection passed. The ZIP has 17 clips and no private settings or local source folders. The app is not Developer ID signed or notarized.
+
+A separate local test state confirmed producer headings in sound menus, saved sound selection, playback, global mute, the six-clip Failure filter, both layouts, and window close/reopen behavior. The new menu selection preserved the event's disabled state. Screenshots show only the app: [records](docs/library-producers-records.png) and [cassettes](docs/library-producers-cassettes.png). User preference hashes were recorded before replacement.
+
+Existing sound IDs remain the same. Older apps can receive the new clips through shared-library updates. Producer groups require the new app code. A complete ASD-STE100 dictionary check was not performed.

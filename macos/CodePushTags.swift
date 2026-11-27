@@ -5,6 +5,7 @@ struct SoundTag: Decodable {
     let text: String
     let file: String
     let event: String?
+    let producer: String?
     let use_cases: [String]?
     let additional_use_cases: [String]?
 }
@@ -213,9 +214,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
 
     private func eventPopup(_ event: String, width: CGFloat) -> NSPopUpButton {
         let popup = NSPopUpButton(frame: .zero, pullsDown: false)
-        for tag in tags {
-            popup.addItem(withTitle: tag.text)
-            popup.lastItem?.representedObject = tag.id
+        popup.menu?.autoenablesItems = false
+        for group in producerGroups(tags) {
+            let heading = NSMenuItem(title: group.name, action: nil, keyEquivalent: "")
+            heading.isEnabled = false
+            popup.menu?.addItem(heading)
+            for tag in group.tags {
+                let item = NSMenuItem(title: tag.text, action: nil, keyEquivalent: "")
+                item.representedObject = tag.id
+                item.indentationLevel = 1
+                popup.menu?.addItem(item)
+            }
         }
         popup.identifier = NSUserInterfaceItemIdentifier(event)
         popup.target = self; popup.action = #selector(saveSelection)
@@ -501,6 +510,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         return basic + (tag.additional_use_cases ?? [])
     }
 
+    private func producerGroups(_ sounds: [SoundTag]) -> [(name: String, tags: [SoundTag])] {
+        let groups = Dictionary(grouping: sounds) { $0.producer ?? "Sound effects" }
+        return groups.keys.sorted {
+            if $0 == "Sound effects" { return false }
+            if $1 == "Sound effects" { return true }
+            return $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
+        }.map { (name: $0, tags: groups[$0]!) }
+    }
+
     @objc private func filterSounds(_ sender: NSButton) {
         soundFilter = sender.identifier?.rawValue ?? "all"
         rebuildPads()
@@ -516,11 +534,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
                      "stackaholics-thats-a-wrap": "THAT’S A WRAP", "branch-outta-here": "BRANCH OUTTA HERE", "dj-khaled-another-one": "ANOTHER ONE",
                      "lego-yoda-death": "LEGO YODA", "lego-break-apart": "LEGO DEATH", "terio-kill-em": "TERIO KILL ’EM",
                      "metal-gear-alert": "METAL GEAR ALERT", "windows-xp-error": "WINDOWS XP", "fahhh": "FAHHH"]
-        for (event, title, color) in [("push", "PUSH", mint), ("merge", "MERGE", violet), ("ci", "FAILURE", coral), ("comment", "COMMENTS", amber)] {
-            guard soundFilter == "all" || soundFilter == event else { continue }
+        let groups = producerGroups(filtered)
+        let colors = [mint, violet, amber, coral]
+        for (index, producer) in groups.enumerated() {
+            let title = producer.name.uppercased()
+            let entries = producer.tags
+            let color = colors[index % colors.count]
             let group = NSStackView(); group.orientation = .vertical; group.alignment = .leading; group.spacing = 8
             group.widthAnchor.constraint(equalToConstant: 336).isActive = true
-            let entries = tags.filter { useCases($0).contains(event) }
             group.addArrangedSubview(label("\(title)  /  \(entries.count)", size: 10, color: color))
             let stack = LibraryStack(); stack.orientation = .vertical; stack.spacing = 6
             stack.alignment = .leading
@@ -551,7 +572,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             group.addArrangedSubview(scroll)
             padGrid.addView(group, in: .leading)
         }
-        let columns = soundFilter == "all" ? 4 : 1
+        let columns = groups.count
         padGrid.frame = NSRect(x: 0, y: 0, width: max(1024, columns * 336 + (columns - 1) * 8), height: 276)
         libraryScroll.contentView.scroll(to: .zero)
         libraryScroll.reflectScrolledClipView(libraryScroll.contentView)
