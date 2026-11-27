@@ -12,6 +12,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
+import uuid
+import wave
 
 ROOT = Path(__file__).resolve().parent
 UTC = dt.timezone.utc
@@ -73,6 +76,22 @@ def play(event='any', tag_id=None):
         raise ValueError('The audio file is missing or outside the kit directory.')
     subprocess.Popen(['afplay', '-v', '0.45', str(path)], stdin=subprocess.DEVNULL,
                      stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    try:
+        started_at = time.time()
+        with wave.open(str(path), 'rb') as audio:
+            duration = audio.getnframes() / audio.getframerate()
+        write_json(state_dir() / 'last-playback.json', {
+            'id': uuid.uuid4().hex,
+            'tag_id': tag['id'],
+            'text': tag['text'],
+            'producer': tag.get('producer'),
+            'event': event,
+            'started_at': started_at,
+            'duration_seconds': duration,
+        })
+    except (OSError, ValueError, wave.Error, EOFError):
+        # A display signal error must not change successful audio playback.
+        pass
     return True
 
 

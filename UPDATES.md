@@ -2,7 +2,7 @@
 
 ## Current state
 
-Version 0.3.2 is the current preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
+Version 0.4.0 is the current preview with a DMG and ZIP in the [public releases](https://github.com/murbany-lola/code-push-tags/releases/latest). See `CFBundleVersion` in `macos/Info.plist` for the build number. No coworkers are enrolled automatically. Version 0.2.0 adds quiet app-update notices and a UI restart action. Automatic app-code installation is not implemented.
 
 Decided by: person (Max). Test locally before sharing. Keep the repository in his personal GitHub account and make it public for downloads.
 
@@ -131,6 +131,8 @@ Decided by: person (Max). Use the new tagline for Code Push Tags.
 
 ## Version 0.3.2
 
+This source checkpoint is included in the version 0.4.0 release.
+
 The library adds five producer-tag parodies: London on da Track, Tay Keith, Turbo, Jetsonmade, and Pi’erre Bourne. Metro and Murda takes are excluded.
 
 Library columns and sound menus use producer groups. Event filters remain available. Both display styles use these groups. Clips without a producer appear under **Sound effects**. Existing sound IDs and saved choices remain the same.
@@ -138,3 +140,13 @@ Library columns and sound menus use producer groups. Event filters remain availa
 The audio can reach older apps through **Refresh Library**. Producer groups require version 0.3.2. The new WAV files are conversions from TagMyBeat MP3 exports. Conversion does not improve source quality. Audio remains outside the MIT code license.
 
 Decided by: person (Max). Add the completed parodies and organize sounds by producer.
+
+## Version 0.4.0
+
+Search the library by producer or clip title. Search also applies to the selected event filter.
+
+Select **MINI** to open the compact floating player. Its pixel LED display animates for local previews and background sound launches. Playback updates do not activate the app. Select **FULL PLAYER** to return. The compact player has a global mute control.
+
+The display uses the clip's expected duration. It does not measure the audio device output. Background indicators require the updated playback runtime. Existing source installations use the new runtime on their next scheduled check. Restart a separately running live listener after updating its source. Closing the compact window keeps installed listeners running.
+
+Decided by: person (Max). Add producer search and a compact player with a pixel LED indicator.

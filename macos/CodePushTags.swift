@@ -1,4 +1,5 @@
 import AppKit
+import Darwin
 
 struct SoundTag: Decodable {
     let id: String
@@ -12,6 +13,15 @@ struct SoundTag: Decodable {
 
 struct Manifest: Decodable {
     let tags: [SoundTag]
+}
+
+struct PlaybackReport: Decodable {
+    let id: String
+    let text: String
+    let producer: String?
+    let event: String
+    let started_at: Double
+    let duration_seconds: Double
 }
 
 struct Repository: Codable {
@@ -81,9 +91,17 @@ class HardwareButton: NSButton {
     }
 }
 
-final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate, NSSearchFieldDelegate {
     private let events = [("push", "Successful push"), ("merge", "PR merged"), ("ci", "PR CI failure"), ("comment", "PR comment")]
     private var tags: [SoundTag] = []
+    private let soundSearch = NSSearchField()
+    private let miniPlayer = MiniPlayerView(frame: .zero)
+    private var miniWindow: NSWindow?
+    private var miniMode = false
+    private var playbackSource: DispatchSourceFileSystemObject?
+    private var playbackStop: DispatchWorkItem?
+    private var backgroundPlayback: PlaybackReport?
+    private var lastPlaybackID: String?
     private var popups: [String: NSPopUpButton] = [:]
     private var switches: [String: NSButton] = [:]
     private let status = NSTextField(wrappingLabelWithString: "Choose your sounds. Enable the tool when you are ready.")
@@ -154,6 +172,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         makeMenus()
         makeWindow()
         refreshSettings()
+        observePlayback()
         timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in
             guard let self = self else { return }
             self.refreshSettings()
@@ -170,7 +189,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        showWindow()
+        if miniMode { showMiniPlayer() } else { showWindow() }
         return true
     }
 
@@ -180,6 +199,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let appMenu = NSMenu()
         appMenu.addItem(withTitle: "Check for Updates…", action: #selector(manualUpdateCheck), keyEquivalent: "").target = self
         appMenu.addItem(withTitle: "Restart UI", action: #selector(restartUI), keyEquivalent: "").target = self
+        appMenu.addItem(withTitle: "Mini Player", action: #selector(showMiniPlayer), keyEquivalent: "m").target = self
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Quit Code Push Tags", action: #selector(quit), keyEquivalent: "q").target = self
         appItem.submenu = appMenu
@@ -189,6 +209,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         let menu = NSMenu()
         menu.addItem(withTitle: "Show Code Push Tags", action: #selector(showWindow), keyEquivalent: "").target = self
+        menu.addItem(withTitle: "Mini Player", action: #selector(showMiniPlayer), keyEquivalent: "").target = self
         menu.addItem(withTitle: "Mute all sounds", action: #selector(toggleMute), keyEquivalent: "").target = self
         menu.addItem(withTitle: "Check for Updates…", action: #selector(manualUpdateCheck), keyEquivalent: "").target = self
         menu.addItem(withTitle: "Restart UI", action: #selector(restartUI), keyEquivalent: "").target = self
@@ -416,6 +437,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         let space = NSView(); space.setContentHuggingPriority(.defaultLow, for: .horizontal)
         previewStatus.font = .monospacedSystemFont(ofSize: 10, weight: .medium)
         previewStatus.textColor = .secondaryLabelColor
+        previewStatus.lineBreakMode = .byTruncatingTail
+        previewStatus.widthAnchor.constraint(equalToConstant: 110).isActive = true
+        soundSearch.placeholderString = "Search producers or sounds"
+        soundSearch.setAccessibilityLabel("Search producers or sounds")
+        soundSearch.delegate = self
+        soundSearch.sendsSearchStringImmediately = true
+        soundSearch.widthAnchor.constraint(equalToConstant: 200).isActive = true
+        let miniButton = hardwareButton("MINI", action: #selector(showMiniPlayer), color: amber)
+        miniButton.widthAnchor.constraint(equalToConstant: 62).isActive = true
         let layout = NSSegmentedControl(labels: ["DJ DECKS", "BOOMBOX"], trackingMode: .selectOne, target: self, action: #selector(changeLayout))
         layout.selectedSegment = layoutStyle == "boombox" ? 1 : 0
         layout.setAccessibilityLabel("App layout")
@@ -425,7 +455,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         logo.setAccessibilityLabel("Code Push Tags cassette DJ")
         logo.widthAnchor.constraint(equalToConstant: 54).isActive = true
         logo.heightAnchor.constraint(equalToConstant: 54).isActive = true
-        let header = NSStackView(views: [logo, brand, space, layout, previewStatus]); header.spacing = 12
+        let header = NSStackView(views: [logo, brand, space, soundSearch, miniButton, layout, previewStatus]); header.spacing = 12
         outer.addArrangedSubview(header)
         header.widthAnchor.constraint(equalTo: outer.widthAnchor).isActive = true
         updateBar.spacing = 12
@@ -519,6 +549,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         }.map { (name: $0, tags: groups[$0]!) }
     }
 
+    private func searchKey(_ value: String) -> String {
+        value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+            .filter { $0.isLetter || $0.isNumber }
+    }
+
+    func controlTextDidChange(_ notification: Notification) {
+        if notification.object as? NSSearchField === soundSearch { rebuildPads() }
+    }
+
     @objc private func filterSounds(_ sender: NSButton) {
         soundFilter = sender.identifier?.rawValue ?? "all"
         rebuildPads()
@@ -528,7 +567,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         for view in padGrid.arrangedSubviews { padGrid.removeArrangedSubview(view); view.removeFromSuperview() }
         pads.removeAll()
         for (key, button) in filterButtons { button.state = key == soundFilter ? .on : .off; button.needsDisplay = true }
-        let filtered = tags.filter { soundFilter == "all" || useCases($0).contains(soundFilter) }
+        let query = searchKey(soundSearch.stringValue)
+        let filtered = tags.filter {
+            (soundFilter == "all" || useCases($0).contains(soundFilter)) &&
+                (query.isEmpty || searchKey(($0.producer ?? "Sound effects") + " " + $0.text).contains(query))
+        }
         bankCount.stringValue = "\(filtered.count) / \(tags.count)"
         let names = ["stackaholics": "WE BUILD DIFFERENT", "stackaholics-welcome-to-main": "WELCOME TO MAIN",
                      "stackaholics-thats-a-wrap": "THAT’S A WRAP", "branch-outta-here": "BRANCH OUTTA HERE", "dj-khaled-another-one": "ANOTHER ONE",
@@ -573,6 +616,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
             padGrid.addView(group, in: .leading)
         }
         let columns = groups.count
+        if filtered.isEmpty { padGrid.addView(label("NO MATCHING SOUNDS", size: 11), in: .leading) }
         padGrid.frame = NSRect(x: 0, y: 0, width: max(1024, columns * 336 + (columns - 1) * 8), height: 276)
         libraryScroll.contentView.scroll(to: .zero)
         libraryScroll.reflectScrolledClipView(libraryScroll.contentView)
@@ -595,7 +639,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         powerStatus.textColor = muted ? coral : mint
         if muted { stopPreview() }
         statusItem.button?.image = NSImage(systemSymbolName: muted ? "speaker.slash.fill" : "speaker.wave.2.fill", accessibilityDescription: muted ? "Sounds muted" : "Sounds enabled")
-        statusItem.menu?.items[1].title = muted ? "Turn all sounds on" : "Mute all sounds"
+        statusItem.menu?.items[2].title = muted ? "Turn all sounds on" : "Mute all sounds"
+        refreshMiniPlayer()
         let repositories = config["repositories"] as? [String]
         let organizations = config["organizations"] as? [String] ?? []
         if repositories == nil {
@@ -787,6 +832,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         for item in pads.values.flatMap({ $0 }) { item.playing = false }
         for artwork in transportArt.values { artwork.setRunning(false) }
         previewStatus.stringValue = muted ? "PREVIEW MUTED" : "READY TO PLAY"
+        refreshMiniPlayer()
     }
 
     private func playPreview(_ identifier: String) {
@@ -805,7 +851,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         pads[identifier]?.forEach { $0.playing = true }
         previewStatus.stringValue = "▶  " + (pads[identifier]?.first?.label ?? tag.text.uppercased())
         status.stringValue = "Preview: " + tag.text
-        if sound.play() { animateTransport(for: identifier) }
+        if sound.play() { animateTransport(for: identifier); refreshMiniPlayer() }
         else { stopPreview(); status.stringValue = "The audio clip could not be played." }
     }
 
@@ -942,7 +988,76 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSSoundDelegate {
         } catch { status.stringValue = "The app window could not be restarted. Your watcher is still running." }
     }
 
-    @objc private func showWindow() { window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true) }
+    private func observePlayback() {
+        try? FileManager.default.createDirectory(at: state, withIntermediateDirectories: true)
+        let descriptor = open(state.path, O_EVTONLY)
+        guard descriptor >= 0 else { return }
+        let source = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .write, queue: .main)
+        source.setEventHandler { [weak self] in self?.readPlayback() }
+        source.setCancelHandler { close(descriptor) }
+        playbackSource = source
+        source.resume()
+        readPlayback()
+    }
+
+    private func readPlayback() {
+        guard let data = try? Data(contentsOf: state.appendingPathComponent("last-playback.json")),
+              let report = try? JSONDecoder().decode(PlaybackReport.self, from: data),
+              report.id != lastPlaybackID else { return }
+        lastPlaybackID = report.id
+        backgroundPlayback = report
+        playbackStop?.cancel()
+        refreshMiniPlayer()
+        let remaining = report.started_at + report.duration_seconds - Date().timeIntervalSince1970
+        if remaining > 0 {
+            let stop = DispatchWorkItem { [weak self] in self?.refreshMiniPlayer() }
+            playbackStop = stop
+            DispatchQueue.main.asyncAfter(deadline: .now() + remaining, execute: stop)
+        }
+    }
+
+    private func refreshMiniPlayer() {
+        let preview = previewSound?.isPlaying == true ? tags.first { $0.id == previewID } : nil
+        let backgroundActive = backgroundPlayback.map {
+            $0.started_at + $0.duration_seconds > Date().timeIntervalSince1970
+        } ?? false
+        let playing = preview != nil || backgroundActive
+        let title = preview?.text ?? backgroundPlayback?.text ?? "ONE TIME FOR THE RUNTIME."
+        let producer = preview != nil ? (preview?.producer ?? "Sound effects") : (backgroundPlayback?.producer ?? "Sound effects")
+        let event = preview != nil ? "PREVIEW" : backgroundPlayback?.event.uppercased() ?? "READY"
+        miniPlayer.setStatus(title: title, subtitle: playing ? producer + " / " + event : "READY FOR THE NEXT DROP", muted: muted)
+        miniPlayer.setPlaying(playing && !muted && miniWindow?.isVisible == true)
+    }
+
+    @objc private func showMiniPlayer() {
+        if miniWindow == nil {
+            let compact = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 420, height: 165),
+                                  styleMask: [.titled, .closable, .utilityWindow, .nonactivatingPanel],
+                                  backing: .buffered, defer: false)
+            compact.title = "Push Tags / Mini"
+            compact.isReleasedWhenClosed = false
+            compact.hidesOnDeactivate = false
+            compact.level = .floating
+            compact.appearance = NSAppearance(named: .darkAqua)
+            compact.contentView = miniPlayer
+            compact.center()
+            miniPlayer.onExpand = { [weak self] in self?.showWindow() }
+            miniPlayer.onToggleMute = { [weak self] in self?.toggleMute() }
+            miniWindow = compact
+        }
+        miniMode = true
+        window.orderOut(nil)
+        miniWindow?.orderFront(nil)
+        refreshMiniPlayer()
+    }
+
+    @objc private func showWindow() {
+        miniMode = false
+        miniWindow?.orderOut(nil)
+        refreshMiniPlayer()
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
     @objc private func quit() { NSApp.terminate(nil) }
 
     private func alert(_ title: String, _ message: String) {

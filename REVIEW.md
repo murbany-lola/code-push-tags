@@ -351,3 +351,26 @@ The Apple Silicon build, ad-hoc signature check, and archive inspection passed. 
 A separate local test state confirmed producer headings in sound menus, saved sound selection, playback, global mute, the six-clip Failure filter, both layouts, and window close/reopen behavior. The new menu selection preserved the event's disabled state. Screenshots show only the app: [records](docs/library-producers-records.png) and [cassettes](docs/library-producers-cassettes.png). User preference hashes were recorded before replacement.
 
 Existing sound IDs remain the same. Older apps can receive the new clips through shared-library updates. Producer groups require the new app code. A complete ASD-STE100 dictionary check was not performed.
+
+## Version 0.4.0: search and compact LED player
+
+Decided by: person (Max). Add producer search and a compact player with a pixel LED activity display.
+
+| Value | Before | After |
+| --- | --- | --- |
+| Prod net LOC | 313 | 313 |
+| Test net LOC | 46 | 46 |
+| New tables | 0 | 0 |
+| New columns | 0 | 0 |
+| New data resources | 0 | 0 |
+| New prod files | 1 | 1 |
+
+Search uses the existing producer metadata, clip titles, and event filters. Case, accents, spaces, and punctuation do not prevent a name match. The compact view uses the existing playback and mute controls. The playback function writes a small local record after it launches the audio process. A directory event observer reads this record. No new GitHub listener or provider call was added.
+
+Reuse-hunter: no findings. LOC-minimizer: no cuts. Path-correctness: minor, wrong producer label on a sound-effect preview after a background producer tag; applied. The native check confirmed **Sound effects / PREVIEW** for LEGO after a London tag. No blocker or major finding required a second review round.
+
+25 focused playback tests passed. Swift typechecking passed. The final Apple Silicon build and ad-hoc signature check passed. The indicator uses expected WAV duration. It does not measure audio device output or detect early termination of an external audio player.
+
+Native checks used separate settings. Producer searches for `pierre` and `TAY KEITH` each returned one clip. The existing Failure filter retained six clips. CUE playback, mini/full switching, and mute controls worked. A real background `push` playback lit the LED with **London on da Track / PUSH** while Finder stayed in front. Global mute blocked background playback and did not write a new playback record. The fixed preview label was checked in the final build.
+
+Screenshots show only the app: [producer search](docs/producer-search.png) and [compact player](docs/mini-player.png). Version 0.4.0 includes the producer catalog from the 0.3.2 source checkpoint. A complete ASD-STE100 dictionary check was not performed.

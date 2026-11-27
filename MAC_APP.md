@@ -26,6 +26,10 @@ Only one manual preview plays at a time. Starting another preview stops the prev
 
 Browse sounds with **All**, **Push**, **Merge**, **Failure**, and **Comments**. Each filter shows sounds in producer groups. Record stacks and cassette stacks use the same groups. Clips without a producer appear under **Sound effects**. Sound menus also use producer groups. These groups do not restrict event selection. Each event can use any listed sound. Choices save locally. The app saves the displayed choices before a new installation.
 
+Use **Search producers or sounds** to find a producer or clip title. Search keeps the selected event filter.
+
+Select **MINI** for the compact floating player. The pixel LED display shows local previews and background sound launches. Playback updates do not bring the app forward. **FULL PLAYER** restores the main window. The compact mute button uses the same global setting. The indicator uses the expected clip duration. It does not confirm audio device output. Closing the window keeps installed listeners running.
+
 Turn global mute off before previewing a clip. Global mute also suppresses manual playback.
 
 ## Select repositories or organizations

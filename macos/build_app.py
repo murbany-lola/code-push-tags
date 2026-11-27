@@ -59,7 +59,8 @@ def build(output):
     subprocess.run(['xcrun', 'swiftc', '-swift-version', '5', '-O', '-framework', 'AppKit',
                     '-target', 'arm64-apple-macosx12.0',
                     str(ROOT / 'macos/CodePushTags.swift'), str(ROOT / 'macos/TransportArtwork.swift'),
-                    str(ROOT / 'macos/LibraryItem.swift'), '-o', str(binary)], check=True)
+                    str(ROOT / 'macos/LibraryItem.swift'), str(ROOT / 'macos/MiniPlayer.swift'),
+                    '-o', str(binary)], check=True)
     subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True)
     archive = output / 'Code-Push-Tags-macOS.zip'
     subprocess.run(['ditto', '-c', '-k', '--sequesterRsrc', '--keepParent', str(app), str(archive)], check=True)

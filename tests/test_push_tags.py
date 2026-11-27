@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import sys
+import wave
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -135,6 +136,7 @@ class TagsTests(unittest.TestCase):
         with patch.object(app.subprocess, 'Popen') as player:
             self.assertFalse(app.play('push'))
             player.assert_not_called()
+        self.assertFalse((app.state_dir() / 'last-playback.json').exists())
 
     def test_audio_uses_afplay_without_wait(self):
         audio = ROOT / 'tests' / 'temporary.wav'
@@ -144,6 +146,50 @@ class TagsTests(unittest.TestCase):
             self.assertTrue(app.play('push'))
             self.assertEqual(player.call_args.args[0][:3], ['afplay', '-v', '0.45'])
             self.assertTrue(player.call_args.kwargs['start_new_session'])
+
+    def playback_tag(self):
+        with wave.open(str(self.root / 'sample.wav'), 'wb') as audio:
+            audio.setnchannels(1)
+            audio.setsampwidth(2)
+            audio.setframerate(8000)
+            audio.writeframes(b'\0\0' * 3200)
+        return {'id': 'sample', 'text': 'Build complete', 'producer': 'Test producer',
+                'file': 'sample.wav', 'event': 'any', '_root': str(self.root)}
+
+    def test_audio_launch_records_display_signal_with_wav_duration(self):
+        tag = self.playback_tag()
+        with patch.object(app, 'tags', return_value=[tag]), patch.object(app.subprocess, 'Popen'), patch.object(app.time, 'time', return_value=1234.5):
+            self.assertTrue(app.play('merge', 'sample'))
+            record = app.read_json(app.state_dir() / 'last-playback.json', {})
+            self.assertEqual({key: value for key, value in record.items() if key != 'id'}, {
+                'tag_id': 'sample', 'text': 'Build complete', 'producer': 'Test producer',
+                'event': 'merge', 'started_at': 1234.5, 'duration_seconds': 0.4,
+            })
+            self.assertEqual(len(record['id']), 32)
+            self.assertTrue(app.play('merge', 'sample'))
+            self.assertNotEqual(record['id'], app.read_json(app.state_dir() / 'last-playback.json', {})['id'])
+
+    def test_audio_spawn_failure_does_not_record_display_signal(self):
+        tag = self.playback_tag()
+        with patch.object(app, 'tags', return_value=[tag]), patch.object(app.subprocess, 'Popen', side_effect=OSError('Cannot start afplay')):
+            with self.assertRaises(OSError):
+                app.play('push', 'sample')
+        self.assertFalse((app.state_dir() / 'last-playback.json').exists())
+
+    def test_display_signal_write_failure_preserves_audio_success(self):
+        tag = self.playback_tag()
+        with patch.object(app, 'tags', return_value=[tag]), patch.object(app.subprocess, 'Popen') as player, patch.object(app, 'write_json', side_effect=OSError('Display state unavailable')):
+            self.assertTrue(app.play('push', 'sample'))
+            player.assert_called_once()
+
+    def test_disabled_or_unavailable_sound_does_not_record_display_signal(self):
+        tag = self.playback_tag()
+        app.write_json(app.state_dir() / 'config.json', {'push_enabled': False})
+        with patch.object(app, 'tags', return_value=[tag]), patch.object(app.subprocess, 'Popen') as player:
+            self.assertFalse(app.play('push', 'sample'))
+            self.assertFalse(app.play('any', 'missing'))
+            player.assert_not_called()
+        self.assertFalse((app.state_dir() / 'last-playback.json').exists())
 
     def test_personal_selection_and_disabled_triggers(self):
         audio = ROOT / 'tests' / 'temporary.wav'
