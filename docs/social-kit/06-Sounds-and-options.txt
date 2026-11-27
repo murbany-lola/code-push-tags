@@ -1,0 +1,32 @@
+SOUNDS INCLUDED WITH THE APP
+
+The current Mac download includes 17 WAV clips. No separate sound download is required for the starter library. Local previews work offline.
+
+The nine generated coding parodies are:
+- We build different!
+- Welcome to main!
+- That's a wrap!
+- Branch outta here!
+- We got functions on the stack.
+- Tay Keith, ship these features out!
+- Run that test, Turbo!
+- Oh Lord, Git just made another one!
+- Yo, P R, you wanna get merged here?
+
+The bundle also includes eight meme and system-sound clips. Each person selects sounds for their own Mac. Installation does not enroll coworkers.
+
+GET MORE SHARED SOUNDS
+
+Select Refresh Library in the app. The app also checks for shared-library updates once per hour. New shared clips do not require a new DMG. The app keeps a complete local copy for offline use.
+
+BRING YOUR OWN WAV FILES
+
+A local file-import button and separate optional pack selector are not implemented. To add your own clips now, fork the source, add PCM WAV files and manifest entries, and use your fork as the library source. Follow FORKING.md.
+
+Code and audio have separate license scopes. The original platform code uses MIT. Audio is outside that code license. Some WAV files were converted from MP3 sources. Conversion does not improve source quality.
+
+Source and Mac download:
+https://github.com/murbany-lola/code-push-tags
+
+Fork and use your own library:
+https://github.com/murbany-lola/code-push-tags/blob/main/FORKING.md

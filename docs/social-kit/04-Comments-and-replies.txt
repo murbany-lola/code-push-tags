@@ -3,7 +3,9 @@ FIRST COMMENT TO LEAVE ON YOUR POST
 For my fellow mixtape millennials: source, Mac download, and setup are here 🎛️
 https://github.com/murbany-lola/code-push-tags
 
-Apple Silicon preview for now. Everyone opts in on their own Mac. Nobody is being involuntarily enrolled in my DJ career.
+17 sounds included. Everyone opts in on their own Mac. Nobody is being involuntarily enrolled in my DJ career.
+
+Apple Silicon preview. One time for the runtime.
 
 
 OPTIONAL FOLLOW-UP COMMENT
@@ -13,7 +15,8 @@ The LEGO death sound when the build fails is unfortunately doing a lot for moral
 
 REPLY: “How do I get it?”
 
-Start here: https://github.com/murbany-lola/code-push-tags/blob/main/INSTALL.md — pick your sounds and repos in the app 🎛️
+Start here: https://github.com/murbany-lola/code-push-tags/blob/main/INSTALL.md
+Pick your sounds and repos in the app 🎛️
 
 REPLY: “Does everyone hear this?”
 
@@ -21,15 +24,27 @@ Only your own Mac. Your teammates have to opt into this nonsense themselves.
 
 REPLY: “Can I turn it off?”
 
-One global mute. Even i knew there needed to be an emergency exit.
+One global mute, including in the mini player. Even i knew there needed to be an emergency exit.
 
 REPLY: “Can I choose the sounds?”
 
-Yep. Push, merge, CI failure, and PR comments have separate sound choices. Double-click a sound card to preview it.
+Yep. Push, merge, CI failure, and PR comments have separate choices. Search a producer, expand their stack, and double-click a sound to preview it. DJ decks or boombox. Your deeply unnecessary choice.
+
+REPLY: “Does it come with sounds?”
+
+17 clips are in the app, including 9 coding parodies. They work offline. Refresh Library gets new shared clips when they are published.
+
+REPLY: “Can I add my own sounds?”
+
+You can fork it and add PCM WAV files to the manifest. There is no local import button yet. Source steps: https://github.com/murbany-lola/code-push-tags/blob/main/FORKING.md
+
+REPLY: “What’s the little LED thing?”
+
+A tiny floating player. It shows the clip and producer, animates pixel bars while a sound plays, and has a global mute. It does not grab focus when a sound starts.
 
 REPLY: “Does it work with private repos?”
 
-It uses your own GitHub access. Pick the repos you want it to follow in the app.
+It uses your own GitHub access. Pick the repos or organizations you want it to follow in the app.
 
 REPLY: “Does it work on Windows / Intel?”
 
@@ -39,6 +54,15 @@ REPLY: “Why did you make this?”
 
 Because git was missing a mixtape era and apparently that was my problem to solve.
 
-REPLY: “Can I add sounds?”
+REPLY: “Can I fork it?”
 
-Source is public. The shared sound library updates separately from the app. Suggestions are extremely welcome and probably dangerous.
+Please do. The original platform code is MIT. Audio is separate from that code license. Fork it. Make it worse.
+
+REPLY: “Is the audio lossless?”
+
+The app uses PCM WAV files. Some sources were MP3s, so the conversion does not make them lossless originals. The slogan remains extremely committed to the bit.
+
+REPLY: “Where’s the video / posting pack?”
+
+Reel: https://github.com/murbany-lola/code-push-tags/releases/download/v0.4.2/instagram-reel.mp4
+Pack: https://github.com/murbany-lola/code-push-tags/releases/download/v0.4.2/Code-Push-Tags-Social-Kit.zip

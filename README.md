@@ -8,9 +8,9 @@
 
 [Download the DMG](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.dmg) · [Download the ZIP](https://github.com/murbany-lola/code-push-tags/releases/latest/download/Code-Push-Tags-macOS.zip) · [Watch the Instagram reel](docs/instagram-reel.mp4) · [App walkthrough](docs/code-push-tags-trailer.mp4)
 
-<a href="https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/instagram-reel.mp4"><img src="docs/instagram-reel-cover.png" alt="I gave my commits a producer tag. Watch the 24-second reel." width="300" /></a>
+<a href="https://github.com/murbany-lola/code-push-tags/releases/download/v0.4.2/instagram-reel.mp4"><img src="docs/instagram-reel-cover.png" alt="I gave my commits a producer tag. Watch the 25-second reel." width="300" /></a>
 
-[Download the social kit](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/Code-Push-Tags-Social-Kit.zip) · [Captions and replies](docs/social-kit) · [Download the reel](https://github.com/murbany-lola/code-push-tags/releases/download/v0.3.1/instagram-reel.mp4) · 24 seconds · Vertical 1080 × 1920 · App-only footage and sound previews.
+[Download the social kit](https://github.com/murbany-lola/code-push-tags/releases/download/v0.4.2/Code-Push-Tags-Social-Kit.zip) · [Captions and replies](docs/social-kit) · [Download the reel](https://github.com/murbany-lola/code-push-tags/releases/download/v0.4.2/instagram-reel.mp4) · 25 seconds · Vertical 1080 × 1920 · App-only footage and sound previews.
 
 The [Apple Silicon app](MAC_APP.md) has DJ and boombox layouts, local previews, event choices, global mute, and repository or organization selection. See [updates](UPDATES.md) and the [sound library](SOUNDS.md).
 

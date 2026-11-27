@@ -4,17 +4,22 @@ i make dumb stuff. this time i gave my git pushes producer tags.
 
 one time for the runtime 🎛️
 
-wav only. lossless or gtfo.
+made a little Mac app for my friends. push, merge, build breaks, PR comments. pick your producers and repos. tiny LED mini player because apparently this needed hardware energy too.
 
-made a little Mac app for my friends. pick your sounds and repos. global mute included because i have some self-awareness.
+comes with 17 sounds, including 9 coding parodies. everyone opts in on their own Mac. global mute included because i have some self-awareness.
+
+public source. fork it. make it worse.
 
 github.com/murbany-lola/code-push-tags
 
 
 SHORT CAPTION
 
-my commits have producer tags now. this is what happens when you give a mixtape millennial access to a computer 🎛️
+i make dumb stuff. my commits have producer tags now.
 
+one time for the runtime 🎛️
+
+for my fellow mixtape millennials. Mac app + public source:
 github.com/murbany-lola/code-push-tags
 
 
@@ -22,8 +27,23 @@ EXTRA SILLY
 
 some people optimize their development workflow. i gave mine a DJ.
 
-push. merge. LEGO death. AOL mail.
+push. merge. LEGO death. AOL mail. a tiny LED display to confirm that i am, in fact, doing too much.
 
-made this for my friends. it has a global mute because i have some self-awareness.
+17 sounds included. pick your producers and repos. one global mute for when you have to be an adult.
 
+one time for the runtime 🎛️
 github.com/murbany-lola/code-push-tags
+
+
+OPTIONAL LOLA LINE
+
+building Lola by day. giving git a mixtape era by night.
+
+
+OPTIONAL WAV LINE
+
+WAV library. lossless or gtfo.
+
+EDITOR NOTE — DO NOT POST
+
+Some included WAV files were converted from MP3 exports. Conversion does not improve their source quality.

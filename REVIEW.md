@@ -422,3 +422,17 @@ Path-correctness: no findings. Plain labels, counts, and separators replace the 
 Swift typechecking and the Apple Silicon build passed. Native checks showed four event labels as static text, no event checkbox cells, four 247-point producer lists, and no outer scrollbar. Producer expansion worked in boombox mode. The README uses current app-only [DJ](docs/library-clean-event-headings-records.png) and [boombox](docs/library-clean-event-headings-cassettes.png) screenshots. No unit tests were added for this display change. A complete ASD-STE100 dictionary check was not performed.
 
 The installed version 0.4.2, build 25 was checked after replacement. Its event headings are static text and each producer list is 241 points high. Sound, mute, and layout preference hashes stayed the same. The published [DMG and ZIP](https://github.com/murbany-lola/code-push-tags/releases/tag/v0.4.2) match the verified local build by size and SHA-256 hash.
+
+## Social kit refresh for version 0.4.2
+
+Decided by: person (Max). Update the social media pack with the current app. Explain the bundled sound library and how people can get more clips.
+
+The revised reel is 25 seconds at 1080 × 1920 and 30 fps. It uses six complete previews: We build different, Branch outta here, LEGO death, AOL mail, the shortened Tay Keith clip, and Run that test Turbo. Each preview shows its matching app card, name, and waveform. The mini-player uses a recording of the actual LED animation. Frame inspection measured the LED onset at 0.667 seconds in that recording. The Turbo audio uses the same onset.
+
+The cover, captions, replies, Story text, group-chat draft, and posting steps were updated. A separate note explains the 17 bundled clips, including nine coding parodies, shared-library updates, and the current fork-based WAV workflow. No app code or sound files changed.
+
+The final MP4 decoded successfully. Its audio peak was 0.780, below full scale. Exact-timestamp frames were checked for the cover, push, Tay Keith, mini-player, full UI, and outro. The logo retained transparency. App footage excludes the desktop, private repository names, account footer, and capture badge. The original app was restored after capture; preference hashes stayed the same.
+
+The posting ZIP contains seven files. Integrity checks passed, and its video hash matches the repository video. No social account was used to publish a post. A complete ASD-STE100 dictionary check was not performed.
+
+The pre-merge gate skipped code review because the change contains only documentation and media. Production and test net LOC are both zero. No unit tests or app build were required for this refresh.
